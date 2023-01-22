@@ -85,8 +85,12 @@ void Error_Handler(void);
 #define RASP_INT_Pin GPIO_PIN_2
 #define RASP_INT_GPIO_Port GPIOD
 #define RASP_INT_EXTI_IRQn EXTI2_IRQn
+#define RASP_GPIO1_Pin GPIO_PIN_4
+#define RASP_GPIO1_GPIO_Port GPIOB
 #define TCA_NRST_Pin GPIO_PIN_5
 #define TCA_NRST_GPIO_Port GPIOB
+#define RASP_GPIO2_Pin GPIO_PIN_8
+#define RASP_GPIO2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
