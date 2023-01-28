@@ -67,12 +67,6 @@ void Error_Handler(void);
 #define PWM_Z_GPIO_Port GPIOA
 #define LED_Pin GPIO_PIN_3
 #define LED_GPIO_Port GPIOA
-#define KX_INT1_Pin GPIO_PIN_4
-#define KX_INT1_GPIO_Port GPIOC
-#define KX_INT1_EXTI_IRQn EXTI4_IRQn
-#define KX_INT2_Pin GPIO_PIN_5
-#define KX_INT2_GPIO_Port GPIOC
-#define KX_INT2_EXTI_IRQn EXTI9_5_IRQn
 #define MPU_INT_Pin GPIO_PIN_6
 #define MPU_INT_GPIO_Port GPIOC
 #define MPU_INT_EXTI_IRQn EXTI9_5_IRQn
@@ -82,15 +76,13 @@ void Error_Handler(void);
 #define PWM_Y_OPT_GPIO_Port GPIOC
 #define PWM_X_OPT_Pin GPIO_PIN_8
 #define PWM_X_OPT_GPIO_Port GPIOA
-#define RASP_INT_Pin GPIO_PIN_2
-#define RASP_INT_GPIO_Port GPIOD
-#define RASP_INT_EXTI_IRQn EXTI2_IRQn
-#define RASP_GPIO1_Pin GPIO_PIN_4
-#define RASP_GPIO1_GPIO_Port GPIOB
+#define KX_INT2_Pin GPIO_PIN_2
+#define KX_INT2_GPIO_Port GPIOD
+#define KX_INT2_EXTI_IRQn EXTI2_IRQn
+#define KX_INT1_Pin GPIO_PIN_4
+#define KX_INT1_GPIO_Port GPIOB
 #define TCA_NRST_Pin GPIO_PIN_5
 #define TCA_NRST_GPIO_Port GPIOB
-#define RASP_GPIO2_Pin GPIO_PIN_8
-#define RASP_GPIO2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
