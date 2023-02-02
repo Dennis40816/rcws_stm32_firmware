@@ -83,6 +83,7 @@ void Error_Handler(void);
 #define KX_INT1_GPIO_Port GPIOB
 #define TCA_NRST_Pin GPIO_PIN_5
 #define TCA_NRST_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

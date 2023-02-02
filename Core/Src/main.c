@@ -259,12 +259,13 @@ static void MX_SPI3_Init(void)
   /* USER CODE END SPI3_Init 1 */
   /* SPI3 parameter configuration*/
   hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_SLAVE;
+  hspi3.Init.Mode = SPI_MODE_MASTER;
   hspi3.Init.Direction = SPI_DIRECTION_2LINES;
   hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi3.Init.NSS = SPI_NSS_HARD_INPUT;
+  hspi3.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
