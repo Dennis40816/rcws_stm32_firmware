@@ -22,6 +22,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "lra/lra_LED.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,8 +58,9 @@
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern SPI_HandleTypeDef hspi3;
+extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
-
+extern enum ledStates led_state;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -239,6 +241,36 @@ void SPI3_IRQHandler(void)
   /* USER CODE BEGIN SPI3_IRQn 1 */
 
   /* USER CODE END SPI3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt.
+  */
+void TIM6_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_IRQn 0 */
+
+  /* USER CODE END TIM6_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_IRQn 1 */
+
+  // LED processing
+  static uint8_t n = 0;
+  switch(led_state){
+    case e_led_toggle:
+      // 10 for 1 second
+
+      if (n++ > 10) {
+	      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	      n = 0;
+      }
+    case e_led_getMsg:
+      break;
+    default:
+      break;
+  }
+  
+  /* USER CODE END TIM6_IRQn 1 */
 }
 
 /**

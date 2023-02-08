@@ -35,6 +35,10 @@
 .settings/
 .metadata
 
+# Debug
+Debug
+*Debug.launch
+
 # Vagrant directory
 .vagrant/
 

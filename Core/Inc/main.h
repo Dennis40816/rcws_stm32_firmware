@@ -31,7 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lra/lra_main.h"
+#include "lra/lra_usb.h"
+#include "lra/lra_LED.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
