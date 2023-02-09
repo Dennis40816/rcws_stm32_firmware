@@ -40,11 +40,19 @@ void LRA_USB_Init(void);
  */
 void LRA_Modify_USB_Mode(uint8_t mode);
 
+/**
+ * @brief LRA printf-like usb print function
+ * 
+ * @param format 
+ * @param ... 
+ */
+void LRA_USB_Print(const char *format, ...);
+
 // LRA usb debug functions
 #ifdef LRA_DEBUG
 
-void LRA_Debug_USB_Write(const char* pString);
-
 #endif
+
+
 
 #endif /* INC_RASP_CMD_H_ */

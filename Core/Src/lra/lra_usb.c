@@ -6,10 +6,16 @@
  */
 
 /* includes */ 
-#include "string.h"
+#include <string.h>
+#include <stdarg.h>
+
 #include "lra/lra_usb.h"
-// to use USB_CDC_T
+
+// to use CDC_Transmit_FS
 #include "usbd_cdc_if.h"
+
+// extern variables
+extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 
 // public functions
 void LRA_USB_Init(void) {
@@ -26,11 +32,14 @@ void LRA_Modify_USB_Mode(uint8_t mode) {
 #ifdef LRA_DEBUG
 
 /* public debug functions */
-void LRA_Debug_USB_Write(const char* pString) {
-  uint8_t len = strnlen(pString, 255);
-  uint8_t *pBuf = pString;
+void LRA_USB_Print(const char *format, ...) {
+  va_list args;
+  uint32_t length;
 
-  CDC_Transmit_FS(pBuf, len);
+  va_start(args, format);
+  length = vsnprintf((char *)UserTxBufferFS, APP_TX_DATA_SIZE, (char *)format, args);
+  va_end(args);
+  CDC_Transmit_FS(UserTxBufferFS, length);
 }
 
 #endif

@@ -111,6 +111,12 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 extern enum ledStates led_state;
+
+#ifdef LRA_DEBUG
+
+extern I2C_HandleTypeDef hi2c1;
+
+#endif
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -129,7 +135,7 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+static int8_t CDC_Pharser(uint8_t lra_usb_cmd, uint8_t target, uint16_t len);
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -262,6 +268,9 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+
+  CDC_Pharser(Buf[0], 0, 1);
+
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
@@ -310,6 +319,8 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 13 */
+
+
   UNUSED(Buf);
   UNUSED(Len);
   UNUSED(epnum);
@@ -318,7 +329,13 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+static int8_t CDC_Pharser(uint8_t lra_usb_cmd, uint8_t target, uint16_t len) {
 
+  #ifdef LRA_DEBUG
+
+  #endif
+  return HAL_OK;
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
