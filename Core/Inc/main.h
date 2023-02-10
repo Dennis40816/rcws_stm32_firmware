@@ -44,6 +44,14 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 
+// TCA9546 related
+extern const uint8_t tca9546_default_addr;
+extern const uint16_t tca9546_default_timeout_ms;
+
+// DRV2605L related
+extern const uint8_t drv2605l_default_addr;
+extern const uint16_t drv2605l_default_timeout_ms;
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

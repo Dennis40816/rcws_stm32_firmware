@@ -7,7 +7,9 @@
     "lra_usb.h": "c",
     "tca9546.h": "c",
     "main.h": "c",
-    "stm32f4xx_hal.h": "c"
+    "stm32f4xx_hal.h": "c",
+    "stm32f4xx_hal_conf.h": "c",
+    "drv2605l.h": "c"
   }, 
 
   /* C/C++ */

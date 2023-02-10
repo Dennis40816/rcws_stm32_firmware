@@ -22,7 +22,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#ifdef LRA_DEBUG
+#include "devices/tca9546.h"
+#include "devices/drv2605l.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,16 +117,46 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   LRA_Init();
+
+  #ifdef LRA_DEBUG
+  // TCA init 
+  TCA9546_t tca = {
+    .ch = 0,
+    .dev_addr = tca9546_default_addr,
+    .timeout_ms = tca9546_default_timeout_ms,
+    .reset_pin = TCA_NRST_Pin,
+    .reset_port = TCA_NRST_GPIO_Port,
+    .hi2c = &hi2c1,
+  };
+  
+  int8_t ret = TCA_Modify_CH(&tca, 1);
+
+  // DRV init
+  DRV2605L_t drvx = {
+    .dev_addr = drv2605l_default_addr,
+    .timeout_ms = drv2605l_default_timeout_ms,
+    .en_pin = 0,
+    .en_port = NULL,
+    .hi2c = &hi2c1,
+  };
+
+  uint8_t drv_buf[DRV_Total_Reg_Num] = {0};
+  // combine into lra_i2c_devices later
+  DRV_Read_All(&drvx, drv_buf);
+
+  #endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-    #ifdef LRA_DEBUG 
-    LRA_Debug_USB_Write("just a test\n");
+    #ifdef LRA_DEBUG
+
     #endif
+    
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -619,7 +652,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, KX_INT1_Pin|TCA_NRST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(KX_INT1_GPIO_Port, KX_INT1_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(TCA_NRST_GPIO_Port, TCA_NRST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : LED_Pin */
   GPIO_InitStruct.Pin = LED_Pin;

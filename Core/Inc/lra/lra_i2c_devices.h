@@ -15,6 +15,12 @@
 
 /* structures */
 
+typedef struct TCA9546_DRV2605L_I2C_Device_Pair_Struct {
+  uint8_t located_ch; // should between 1 to 4 (details see tca9546.h)
+  TCA9546_t* tca;
+  DRV2605L_t* drv;
+} TCA_DRV_Pair_t;
+
 typedef struct LRA_I2C_Devices_Struct {
   TCA9546_t* pTca;
   DRV2605L_t* pDrvX;

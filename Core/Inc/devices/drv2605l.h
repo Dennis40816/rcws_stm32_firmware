@@ -16,19 +16,22 @@
 
 /* exported variables */
 
-extern const uint8_t drv2605l_addr_default;
+extern const uint8_t drv2605l_default_addr;
+extern const uint16_t drv2605l_default_timeout_ms;
 
 /* macros */
 
-#define DRV2605L_MEMADDSIZE (1) // 1 byte
+#define DRV2605L_MEMADDSIZE (1)  // 1 byte
 
 /* structs */
 
 typedef struct DRV2605L_Struct {
   uint16_t dev_addr;
-  uint16_t timeout_ms;  // should > 0
+  uint16_t timeout_ms;  // should always > 0
+  uint16_t en_pin;
+  GPIO_TypeDef* en_port; // set to NULL if not used
   I2C_HandleTypeDef* hi2c;
-}DRV2605L_t;
+} DRV2605L_t;
 
 /* enum */
 
@@ -54,7 +57,7 @@ typedef enum DRV2605L_Registers {
   A_CAL_BEMF = 0x19,
   Feedback_Control = 0x1A,
   Control1 = 0x1B,
-  Control2 = 0x1C, 
+  Control2 = 0x1C,
   Control3 = 0x1D,
   Control4 = 0x1E,
   Control5 = 0x1F,
@@ -62,13 +65,21 @@ typedef enum DRV2605L_Registers {
   VBAT = 0x21,
   LRA_Period = 0x22,
   DRV_Total_Reg_Num
-}DRV_Regs;
+} DRV_Regs;
 
 /* public functions */
 
 HAL_StatusTypeDef DRV_SoftReset(const DRV2605L_t* const pDrv);
-HAL_StatusTypeDef DRV_Go(const DRV2605L_t* const pDrv);
-HAL_StatusTypeDef DRV_Stop(const DRV2605L_t* const pDrv);
+HAL_StatusTypeDef DRV_StandbySet(const DRV2605L_t* const pDrv);
+HAL_StatusTypeDef DRV_StandbyUnset(const DRV2605L_t* const pDrv);
+HAL_StatusTypeDef DRV_GoSet(const DRV2605L_t* const pDrv);
+HAL_StatusTypeDef DRV_GoUnset(const DRV2605L_t* const pDrv);
+HAL_StatusTypeDef DRV_Run_AutoCalibration(const DRV2605L_t* const pDrv,
+                                          uint8_t* pResult);
+HAL_StatusTypeDef DRV_SetMode_PWM(const DRV2605L_t* const pDrv);
+
+/* public IO functions */
+
 HAL_StatusTypeDef DRV_Read_All(const DRV2605L_t* const pDrv, uint8_t* pData);
 
 HAL_StatusTypeDef DRV_Write(const DRV2605L_t* const pDrv,
@@ -80,5 +91,13 @@ HAL_StatusTypeDef DRV_Read(const DRV2605L_t* const pDrv,
                            const DRV_Regs iaddr,
                            uint16_t len,
                            uint8_t* const pData);
+
+HAL_StatusTypeDef DRV_ReadReg(const DRV2605L_t* const pDrv,
+                              const uint16_t iaddr,
+                              uint8_t* pData);
+
+HAL_StatusTypeDef DRV_WriteReg(const DRV2605L_t* const pDrv,
+                               const uint16_t iaddr,
+                               uint8_t data);
 
 #endif /* INC_DEVICES_DRV2605L_H_ */

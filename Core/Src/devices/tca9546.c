@@ -12,8 +12,8 @@
 /* exported variables */
 
 // when A1 ~ A3 are all low -> default address is 0x70 (0b111 0000)
-const uint8_t tca_addr_default = 0x70;
-uint16_t tca_timeout_default_ms = 1;
+const uint8_t tca9546_default_addr = 0x70;
+const uint16_t tca9546_default_timeout_ms = STM32_I2C_MIN_TIMEOUT_MS;
 
 /* public functions */
 
@@ -67,7 +67,7 @@ int8_t TCA_Get_CH(TCA9546_t* const pTca) {
   uint8_t ch_hex = 0xff;
 
   HAL_StatusTypeDef ret = HAL_I2C_Master_Receive(
-      pTca->hi2c, (pTca->dev_addr << 1 ) | I2C_R, &ch_hex, 1, pTca->timeout_ms);
+      pTca->hi2c, (pTca->dev_addr << 1) | I2C_R, &ch_hex, 1, pTca->timeout_ms);
 
   if (ret == HAL_OK) {
     uint8_t ch = 0xff;
@@ -95,6 +95,13 @@ int8_t TCA_Get_CH(TCA9546_t* const pTca) {
   return -1;
 }
 
+/**
+ * @brief Try to reset TCA9546 by pull low and then high at NRST pin. Note that
+ * this function return HAL_ERROR if no NRST pin.
+ *
+ * @param pTca
+ * @return HAL_StatusTypeDef
+ */
 HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca) {
   if (pTca == NULL)
     return HAL_ERROR;
@@ -102,7 +109,10 @@ HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca) {
   if (pTca->hi2c == NULL)
     return HAL_ERROR;
 
-  // Try to pull low reset pin and then pull high again. 
+  if (pTca->reset_port == NULL)
+    return HAL_ERROR;
+
+  // Try to pull low reset pin and then pull high again.
   // May cause bug at delay
   HAL_GPIO_WritePin(pTca->reset_port, pTca->reset_pin, GPIO_PIN_RESET);
   HAL_Delay(1);
@@ -115,6 +125,6 @@ HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca) {
   // read not ok
   if (ret == -1)
     return HAL_ERROR;
-  
+
   return HAL_OK;
 }
