@@ -107,7 +107,13 @@ void LRA_Main_EnterPoint(void) {
   LRA_LED_Flash_N(2, 500);
 
   #ifdef LRA_TEST
-  
+  uint8_t addr = 0x0;
+  uint8_t my_size = 4;
+  uint8_t tx_data[10] = {addr << 1 | 1}; // 0: write, 1: read, other is dummy
+
+  uint8_t rx_data[10];
+  ret = HAL_SPI_TransmitReceive(&hspi3, tx_data, rx_data, my_size+1, 5);
+
   #endif
 
   while (1) {
