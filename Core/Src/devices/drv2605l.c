@@ -6,7 +6,6 @@
  */
 
 /* includes */
-
 #include "devices/drv2605l.h"
 
 /* exported variables */
@@ -15,38 +14,67 @@ const uint16_t drv2605l_default_timeout_ms = STM32_I2C_MIN_TIMEOUT_MS;
 
 /* static function declaration */
 
-static HAL_StatusTypeDef DRV_UnsafeRead(const DRV2605L_t* const pDrv,
-                                        const DRV_Regs iaddr,
-                                        const uint16_t len,
-                                        uint8_t* const pData);
+static HAL_StatusTypeDef DRV2605L_UnsafeRead(const DRV2605L_t* const pDrv,
+                                             const DRV_Regs iaddr,
+                                             const uint16_t len,
+                                             uint8_t* const pData);
 
-static HAL_StatusTypeDef DRV_UnsafeWrite(const DRV2605L_t* const pDrv,
-                                         const DRV_Regs iaddr,
-                                         const uint16_t len,
-                                         uint8_t* const pData);
+static HAL_StatusTypeDef DRV2605L_UnsafeWrite(const DRV2605L_t* const pDrv,
+                                              const DRV_Regs iaddr,
+                                              const uint16_t len,
+                                              uint8_t* const pData);
 
-static HAL_StatusTypeDef DRV_UnsafeReadReg(const DRV2605L_t* const pDrv,
-                                           const uint16_t iaddr,
-                                           uint8_t* pData);
+static HAL_StatusTypeDef DRV2605L_UnsafeReadReg(const DRV2605L_t* const pDrv,
+                                                const DRV_Regs iaddr,
+                                                uint8_t* pData);
 
-static HAL_StatusTypeDef DRV_UnsafeWriteReg(const DRV2605L_t* const pDrv,
-                                            const uint16_t iaddr,
-                                            uint8_t data);
+static HAL_StatusTypeDef DRV2605L_UnsafeWriteReg(const DRV2605L_t* const pDrv,
+                                                 const DRV_Regs iaddr,
+                                                 uint8_t data);
 
 /* public functions */
 
 /**
+ * @brief Return HAL_OK if device is DRV2605L. Return HAL_ERROR if device isn't DRV2605L.
+ * Return -1 express failure
+ *
+ * @param pDrv
+ * @return int8_t
+ */
+int8_t DRV2605L_ID_Validate(const DRV2605L_t* const pDrv) {
+  if (pDrv == NULL) {
+    return -1;
+  }
+
+  uint8_t val;
+  DRV2605L_ReadReg(pDrv, Status, &val);
+
+  if ((val >> 5) != 0x07)
+    return HAL_ERROR;
+  
+  return HAL_OK;
+}
+
+/**
  * @brief Write to Mode register @7th bit to reset drv2605l device to default
- * state
+ * state. Note that this function will be blocked by HAL_Delay() to wait reset
+ * done.
  *
  * @param pDrv
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_SoftReset(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_SoftReset(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
-  return DRV_UnsafeWriteReg(pDrv, Mode, 0x01 << 7);
+  HAL_StatusTypeDef ret = DRV2605L_UnsafeWriteReg(pDrv, Mode, 0x01 << 7);
+  if (ret != HAL_OK)
+    return ret;
+
+  // wait for reset done
+  HAL_Delay(100);
+
+  return HAL_OK;
 }
 
 /**
@@ -57,13 +85,13 @@ HAL_StatusTypeDef DRV_SoftReset(const DRV2605L_t* const pDrv) {
  * @param bStandby
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_StandbySet(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_StandbySet(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
   // read Mode register first
   uint8_t val;
-  HAL_StatusTypeDef ret = DRV_UnsafeRead(pDrv, Mode, 1, &val);
+  HAL_StatusTypeDef ret = DRV2605L_UnsafeRead(pDrv, Mode, 1, &val);
   if (ret != HAL_OK)
     return ret;
 
@@ -72,7 +100,7 @@ HAL_StatusTypeDef DRV_StandbySet(const DRV2605L_t* const pDrv) {
   val |= 1 << 6;
 
   // update to register
-  return DRV_UnsafeWrite(pDrv, Mode, 1, &val);
+  return DRV2605L_UnsafeWrite(pDrv, Mode, 1, &val);
 }
 
 /**
@@ -82,13 +110,13 @@ HAL_StatusTypeDef DRV_StandbySet(const DRV2605L_t* const pDrv) {
  * @param pDrv
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_StandbyUnset(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_StandbyUnset(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
   // read Mode register first
   uint8_t val;
-  HAL_StatusTypeDef ret = DRV_UnsafeRead(pDrv, Mode, 1, &val);
+  HAL_StatusTypeDef ret = DRV2605L_UnsafeRead(pDrv, Mode, 1, &val);
   if (ret != HAL_OK)
     return ret;
 
@@ -97,7 +125,7 @@ HAL_StatusTypeDef DRV_StandbyUnset(const DRV2605L_t* const pDrv) {
   val &= ~(1 << 6);
 
   // update to register
-  return DRV_UnsafeWrite(pDrv, Mode, 1, &val);
+  return DRV2605L_UnsafeWrite(pDrv, Mode, 1, &val);
 }
 
 /**
@@ -106,13 +134,13 @@ HAL_StatusTypeDef DRV_StandbyUnset(const DRV2605L_t* const pDrv) {
  * @param drv
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_GoSet(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_GoSet(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
   uint8_t val = 0x01;
 
-  return DRV_UnsafeWrite(pDrv, Go, 1, &val);
+  return DRV2605L_UnsafeWrite(pDrv, Go, 1, &val);
 }
 
 /**
@@ -121,13 +149,13 @@ HAL_StatusTypeDef DRV_GoSet(const DRV2605L_t* const pDrv) {
  * @param pDrv
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_GoUnset(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_GoUnset(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
   uint8_t val = 0x00;
 
-  return DRV_UnsafeWrite(pDrv, Go, 1, &val);
+  return DRV2605L_UnsafeWrite(pDrv, Go, 1, &val);
 }
 
 /**
@@ -142,39 +170,39 @@ HAL_StatusTypeDef DRV_GoUnset(const DRV2605L_t* const pDrv) {
  * @param pResult
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_Run_AutoCalibration(const DRV2605L_t* const pDrv,
-                                          uint8_t* pResult) {
+HAL_StatusTypeDef DRV2605L_Run_AutoCalibration(const DRV2605L_t* const pDrv,
+                                               uint8_t* pResult) {
   // Check
   if (pDrv == NULL || pDrv->hi2c == NULL || pResult == NULL)
     return HAL_ERROR;
 
   // Copy Go and Mode Reg
   uint8_t tmp_Go;
-  HAL_StatusTypeDef ret = DRV_UnsafeReadReg(pDrv, Go, &tmp_Go);
+  HAL_StatusTypeDef ret = DRV2605L_UnsafeReadReg(pDrv, Go, &tmp_Go);
   if (ret != HAL_OK)
     return ret;
 
   uint8_t tmp_Mode;
-  ret = DRV_UnsafeReadReg(pDrv, Mode, &tmp_Mode);
+  ret = DRV2605L_UnsafeReadReg(pDrv, Mode, &tmp_Mode);
   if (ret != HAL_OK)
     return ret;
 
   // Make the device stop anyway
-  ret = DRV_UnsafeWriteReg(pDrv, Go, 0x00);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, Go, 0x00);
   if (ret != HAL_OK)
     return ret;
 
-  // ret = DRV_UnsafeWriteReg(pDrv, Mode, tmp_Mode | (1 << 6));
+  // ret = DRV2605L_UnsafeWriteReg(pDrv, Mode, tmp_Mode | (1 << 6));
   // if (ret != HAL_OK)
   //   return ret;
 
   // Write 0x07 to register: Mode, which makes the device get ready and go into
   // auto calibration mode.
-  ret = DRV_WriteReg(pDrv, Mode, 0x07);
+  ret = DRV2605L_WriteReg(pDrv, Mode, 0x07);
   if (ret != HAL_OK)
     return ret;
 
-  ret = DRV_UnsafeWriteReg(pDrv, Go, 0x01);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, Go, 0x01);
   if (ret != HAL_OK)
     return ret;
 
@@ -182,16 +210,16 @@ HAL_StatusTypeDef DRV_Run_AutoCalibration(const DRV2605L_t* const pDrv,
   HAL_Delay(1200);
 
   // Get the result
-  ret = DRV_UnsafeReadReg(pDrv, Status, pResult);
+  ret = DRV2605L_UnsafeReadReg(pDrv, Status, pResult);
   if (ret != HAL_OK)
     return ret;
 
   // Resume Mode and Go register
-  ret = DRV_UnsafeWriteReg(pDrv, Mode, tmp_Mode);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, Mode, tmp_Mode);
   if (ret != HAL_OK)
     return ret;
 
-  ret = DRV_UnsafeWriteReg(pDrv, Go, tmp_Go);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, Go, tmp_Go);
   if (ret != HAL_OK)
     return ret;
 
@@ -199,31 +227,46 @@ HAL_StatusTypeDef DRV_Run_AutoCalibration(const DRV2605L_t* const pDrv,
 }
 
 /**
+ * @brief User can rewrite this function if need a series of DRV2605L_Write to
+ * complete their own configs
+ *
+ * @param pDrv
+ * @return HAL_StatusTypeDef
+ */
+HAL_StatusTypeDef DRV2605L_Custom_Config(const DRV2605L_t* const pDrv) {
+  /* Add your own code here */
+
+  /* Some examples */
+  
+  return HAL_OK;
+}
+
+/**
  * @brief Set DRV2605L to PWM control mode with standby bit set. Activate
- * actuator by calling DRV_StandbyUnset(). Note that if you want to stop driving
- * actuator, you must set STANDBY bit to 1. DRV_GoUnset() [Go bit] is useless in
- * PWM mode. Call DRV_StandbySet() instead.
+ * actuator by calling DRV2605L_StandbyUnset(). Note that if you want to stop
+ * driving actuator, you must set STANDBY bit to 1. DRV2605L_GoUnset() [Go bit]
+ * is useless in PWM mode. Call DRV2605L_StandbySet() instead.
  *
  * @details See datasheet p.27 and p.31
  * @param pDrv
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_SetMode_PWM(const DRV2605L_t* const pDrv) {
+HAL_StatusTypeDef DRV2605L_SetMode_PWM(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
   // write 0x03 | 1<< 6 to Mode register (standby)
-  HAL_StatusTypeDef ret = DRV_UnsafeWriteReg(pDrv, Mode, 0x03 | (1 << 6));
+  HAL_StatusTypeDef ret = DRV2605L_UnsafeWriteReg(pDrv, Mode, 0x03 | (1 << 6));
   if (ret != HAL_OK)
     return ret;
 
   // set N_PWM_ANALOG bit (Control 3, 1.st bit) to 0
   uint8_t tmp_Control3;
-  ret = DRV_UnsafeReadReg(pDrv, Control3, &tmp_Control3);
+  ret = DRV2605L_UnsafeReadReg(pDrv, Control3, &tmp_Control3);
   if (ret != HAL_OK)
     return ret;
 
-  ret = DRV_UnsafeWriteReg(pDrv, Control3, tmp_Control3 & ~(1 << 1));
+  ret = DRV2605L_UnsafeWriteReg(pDrv, Control3, tmp_Control3 & ~(1 << 1));
   if (ret != HAL_OK)
     return ret;
 
@@ -239,11 +282,12 @@ HAL_StatusTypeDef DRV_SetMode_PWM(const DRV2605L_t* const pDrv) {
  * @param pData
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_Read_All(const DRV2605L_t* const pDrv, uint8_t* pData) {
-  if (pDrv == NULL || pDrv->hi2c == NULL || pData == NULL) 
+HAL_StatusTypeDef DRV2605L_Read_All(const DRV2605L_t* const pDrv,
+                                    uint8_t* pData) {
+  if (pDrv == NULL || pDrv->hi2c == NULL || pData == NULL)
     return HAL_ERROR;
 
-  return DRV_UnsafeRead(pDrv, Status, DRV_Total_Reg_Num, pData);
+  return DRV2605L_UnsafeRead(pDrv, Status, DRV_Total_Reg_Num, pData);
 }
 
 /**
@@ -254,10 +298,10 @@ HAL_StatusTypeDef DRV_Read_All(const DRV2605L_t* const pDrv, uint8_t* pData) {
  * @param pData
  * @return HAL_StatusTypeDef
  */
-static HAL_StatusTypeDef DRV_UnsafeReadReg(const DRV2605L_t* const pDrv,
-                                           const uint16_t iaddr,
-                                           uint8_t* pData) {
-  return DRV_UnsafeRead(pDrv, iaddr, 1, pData);
+static HAL_StatusTypeDef DRV2605L_UnsafeReadReg(const DRV2605L_t* const pDrv,
+                                                const DRV_Regs iaddr,
+                                                uint8_t* pData) {
+  return DRV2605L_UnsafeRead(pDrv, iaddr, 1, pData);
 }
 
 /**
@@ -268,13 +312,13 @@ static HAL_StatusTypeDef DRV_UnsafeReadReg(const DRV2605L_t* const pDrv,
  * @param pData
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_ReadReg(const DRV2605L_t* const pDrv,
-                              const uint16_t iaddr,
-                              uint8_t* pData) {
-  if (pDrv == NULL || pDrv->hi2c == NULL || pData == NULL) 
+HAL_StatusTypeDef DRV2605L_ReadReg(const DRV2605L_t* const pDrv,
+                                   const DRV_Regs iaddr,
+                                   uint8_t* pData) {
+  if (pDrv == NULL || pDrv->hi2c == NULL || pData == NULL)
     return HAL_ERROR;
 
-  return DRV_UnsafeRead(pDrv, iaddr, 1, pData);
+  return DRV2605L_UnsafeRead(pDrv, iaddr, 1, pData);
 }
 
 /**
@@ -285,10 +329,10 @@ HAL_StatusTypeDef DRV_ReadReg(const DRV2605L_t* const pDrv,
  * @param data
  * @return HAL_StatusTypeDef
  */
-static HAL_StatusTypeDef DRV_UnsafeWriteReg(const DRV2605L_t* const pDrv,
-                                            const uint16_t iaddr,
-                                            uint8_t data) {
-  return DRV_UnsafeWrite(pDrv, iaddr, 1, &data);
+static HAL_StatusTypeDef DRV2605L_UnsafeWriteReg(const DRV2605L_t* const pDrv,
+                                                 const DRV_Regs iaddr,
+                                                 uint8_t data) {
+  return DRV2605L_UnsafeWrite(pDrv, iaddr, 1, &data);
 }
 
 /**
@@ -299,13 +343,13 @@ static HAL_StatusTypeDef DRV_UnsafeWriteReg(const DRV2605L_t* const pDrv,
  * @param data
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_WriteReg(const DRV2605L_t* const pDrv,
-                               const uint16_t iaddr,
-                               uint8_t data) {
+HAL_StatusTypeDef DRV2605L_WriteReg(const DRV2605L_t* const pDrv,
+                                    const DRV_Regs iaddr,
+                                    uint8_t data) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
-  return DRV_UnsafeWrite(pDrv, iaddr, 1, &data);
+  return DRV2605L_UnsafeWrite(pDrv, iaddr, 1, &data);
 }
 
 /**
@@ -317,11 +361,11 @@ HAL_StatusTypeDef DRV_WriteReg(const DRV2605L_t* const pDrv,
  * @param pData
  * @return HAL_StatusTypeDef
  */
-static HAL_StatusTypeDef DRV_UnsafeWrite(const DRV2605L_t* const pDrv,
-                                         const DRV_Regs iaddr,
-                                         const uint16_t len,
-                                         uint8_t* const pData) {
-  return HAL_I2C_Mem_Write(pDrv->hi2c, (pDrv->dev_addr) << I2C_W, iaddr,
+static HAL_StatusTypeDef DRV2605L_UnsafeWrite(const DRV2605L_t* const pDrv,
+                                              const DRV_Regs iaddr,
+                                              const uint16_t len,
+                                              uint8_t* const pData) {
+  return HAL_I2C_Mem_Write(pDrv->hi2c, (pDrv->dev_addr) << 1 | I2C_W, iaddr,
                            DRV2605L_MEMADDSIZE, pData, len, pDrv->timeout_ms);
 }
 
@@ -334,10 +378,10 @@ static HAL_StatusTypeDef DRV_UnsafeWrite(const DRV2605L_t* const pDrv,
  * @param pData
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef DRV_Write(const DRV2605L_t* const pDrv,
-                            const DRV_Regs iaddr,
-                            uint16_t len,
-                            uint8_t* const pData) {
+HAL_StatusTypeDef DRV2605L_Write(const DRV2605L_t* const pDrv,
+                                 const DRV_Regs iaddr,
+                                 uint16_t len,
+                                 uint8_t* const pData) {
   if (pDrv == NULL)
     return HAL_ERROR;
 
@@ -353,7 +397,7 @@ HAL_StatusTypeDef DRV_Write(const DRV2605L_t* const pDrv,
   if (len > (DRV_Total_Reg_Num - iaddr))
     len = DRV_Total_Reg_Num - iaddr;
 
-  return DRV_UnsafeWrite(pDrv, iaddr, len, pData);
+  return DRV2605L_UnsafeWrite(pDrv, iaddr, len, pData);
 }
 
 /**
@@ -366,11 +410,11 @@ HAL_StatusTypeDef DRV_Write(const DRV2605L_t* const pDrv,
  * @param pData
  * @return HAL_StatusTypeDef
  */
-static HAL_StatusTypeDef DRV_UnsafeRead(const DRV2605L_t* const pDrv,
-                                        const DRV_Regs iaddr,
-                                        uint16_t len,
-                                        uint8_t* const pData) {
-  return HAL_I2C_Mem_Read(pDrv->hi2c, (pDrv->dev_addr) << I2C_R, iaddr,
+static HAL_StatusTypeDef DRV2605L_UnsafeRead(const DRV2605L_t* const pDrv,
+                                             const DRV_Regs iaddr,
+                                             uint16_t len,
+                                             uint8_t* const pData) {
+  return HAL_I2C_Mem_Read(pDrv->hi2c, (pDrv->dev_addr) << 1 | I2C_R, iaddr,
                           DRV2605L_MEMADDSIZE, pData, len, pDrv->timeout_ms);
 }
 
@@ -384,10 +428,10 @@ static HAL_StatusTypeDef DRV_UnsafeRead(const DRV2605L_t* const pDrv,
  * @param pData pointer of data buffer
  * @return HAL_StatusTypeDef 只有 HAL_OK or HAL_ERROR 兩種可能
  */
-HAL_StatusTypeDef DRV_Read(const DRV2605L_t* const pDrv,
-                           const DRV_Regs iaddr,
-                           uint16_t len,
-                           uint8_t* const pData) {
+HAL_StatusTypeDef DRV2605L_Read(const DRV2605L_t* const pDrv,
+                                const DRV_Regs iaddr,
+                                uint16_t len,
+                                uint8_t* const pData) {
   if (pDrv == NULL)
     return HAL_ERROR;
 
@@ -404,5 +448,5 @@ HAL_StatusTypeDef DRV_Read(const DRV2605L_t* const pDrv,
   if (len > (DRV_Total_Reg_Num - iaddr))
     len = DRV_Total_Reg_Num - iaddr;
 
-  return DRV_UnsafeRead(pDrv, iaddr, len, pData);
+  return DRV2605L_UnsafeRead(pDrv, iaddr, len, pData);
 }

@@ -9,7 +9,8 @@
     "main.h": "c",
     "stm32f4xx_hal.h": "c",
     "stm32f4xx_hal_conf.h": "c",
-    "drv2605l.h": "c"
+    "drv2605l.h": "c",
+    "lra_main.h": "c"
   }, 
 
   /* C/C++ */
