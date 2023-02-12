@@ -133,7 +133,7 @@ HAL_StatusTypeDef LRA_Main_System_Init(void) {
       .hi2c = &hi2c1,
   };
 
-  uint8_t drv_buf[DRV_Total_Reg_Num] = {0};
+  uint8_t drv_buf[DRV2605L_Total_Reg_Num] = {0};
   // combine into lra_i2c_devices later
   DRV2605L_Read_All(&drvx, drv_buf);
 
