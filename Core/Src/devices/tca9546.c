@@ -25,7 +25,7 @@ const uint16_t tca9546_default_timeout_ms = STM32_I2C_MIN_TIMEOUT_MS;
  * state)
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef TCA_Modify_CH(TCA9546_t* const pTca, const uint8_t ch) {
+HAL_StatusTypeDef TCA9546_Modify_CH(TCA9546_t* const pTca, const uint8_t ch) {
   if (pTca == NULL)
     return HAL_ERROR;
 
@@ -57,7 +57,7 @@ HAL_StatusTypeDef TCA_Modify_CH(TCA9546_t* const pTca, const uint8_t ch) {
  * @param pTca
  * @return int8_t
  */
-int8_t TCA_Get_CH(TCA9546_t* const pTca) {
+int8_t TCA9546_Get_CH(TCA9546_t* const pTca) {
   if (pTca == NULL)
     return HAL_ERROR;
 
@@ -102,7 +102,7 @@ int8_t TCA_Get_CH(TCA9546_t* const pTca) {
  * @param pTca
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca) {
+HAL_StatusTypeDef TCA9546_Reset(TCA9546_t* const pTca) {
   if (pTca == NULL)
     return HAL_ERROR;
 
@@ -120,7 +120,7 @@ HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca) {
   HAL_Delay(1);
 
   // read ch and update to pTca, ret should always return 0
-  int8_t ret = TCA_Get_CH(pTca);
+  int8_t ret = TCA9546_Get_CH(pTca);
 
   // read not ok
   if (ret == -1)

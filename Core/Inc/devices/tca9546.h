@@ -44,8 +44,8 @@ typedef struct TCA9546PWAR {
 } TCA9546_t;
 
 /* public functions */
-HAL_StatusTypeDef TCA_Modify_CH(TCA9546_t* const pTca, const uint8_t ch);
-int8_t TCA_Get_CH(TCA9546_t* const pTca);
-HAL_StatusTypeDef TCA_Reset(TCA9546_t* const pTca);
+HAL_StatusTypeDef TCA9546_Modify_CH(TCA9546_t* const pTca, const uint8_t ch);
+int8_t TCA9546_Get_CH(TCA9546_t* const pTca);
+HAL_StatusTypeDef TCA9546_Reset(TCA9546_t* const pTca);
 
 #endif /* INC_DEVICES_TCA9546_H_ */
