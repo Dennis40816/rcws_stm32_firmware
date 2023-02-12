@@ -22,10 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#ifdef LRA_DEBUG
-#include "devices/tca9546.h"
-#include "devices/drv2605l.h"
-#endif
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +67,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
-static void LRA_Init(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,39 +113,18 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  LRA_Init();
 
-  #ifdef LRA_DEBUG
-  // TCA init 
-  TCA9546_t tca = {
-    .ch = 0,
-    .dev_addr = tca9546_default_addr,
-    .timeout_ms = tca9546_default_timeout_ms,
-    .reset_pin = TCA_NRST_Pin,
-    .reset_port = TCA_NRST_GPIO_Port,
-    .hi2c = &hi2c1,
-  };
-  
-  int8_t ret = TCA_Modify_CH(&tca, 1);
+  // LRA project loop enter point
+  LRA_Main_EnterPoint();
 
-  // DRV init
-  DRV2605L_t drvx = {
-    .dev_addr = drv2605l_default_addr,
-    .timeout_ms = drv2605l_default_timeout_ms,
-    .en_pin = 0,
-    .en_port = NULL,
-    .hi2c = &hi2c1,
-  };
-
-  uint8_t drv_buf[DRV_Total_Reg_Num] = {0};
-  // combine into lra_i2c_devices later
-  DRV_Read_All(&drvx, drv_buf);
-
-  #endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  
+  // if led start to flash means LRA Main Loop is down 
+  led_state = LRA_LED_FLASH;
+
   while (1)
   {
     #ifdef LRA_DEBUG
@@ -700,13 +676,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void LRA_Init(){
-  // timers
-	HAL_TIM_Base_Start_IT(&htim6);
 
-  // private functions
-  LRA_USB_Init();
-}
 /* USER CODE END 4 */
 
 /**

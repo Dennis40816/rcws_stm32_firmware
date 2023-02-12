@@ -8,13 +8,24 @@
 #ifndef INC_LRA_LED_H_
 #define INC_LRA_LED_H_
 
-// exported enums
-enum ledStates {
-	e_led_toggle,
-	e_led_getMsg,
-};
+/* includes */
 
-// extern variables
-extern enum ledStates led_state;
+#include <stm32f4xx_hal.h>
+
+/* exported enums */ 
+
+typedef enum {
+	LRA_LED_DOWN,
+	LRA_LED_UP,
+	LRA_LED_FLASH
+}LEDStates_t;
+
+/* extern variables */ 
+
+extern LEDStates_t led_state;
+
+/* public functions */
+
+void LRA_LED_Flash_N(uint8_t n, uint32_t delay);
 
 #endif /* INC_LRA_LED_H_ */
