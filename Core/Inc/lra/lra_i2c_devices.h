@@ -10,6 +10,9 @@
 
 /* includes */
 
+// includes user defined macros, should be the top of included files
+#include "lra/lra_user_config.h"
+
 #include "devices/drv2605l.h"
 #include "devices/tca9546.h"
 

@@ -8,6 +8,11 @@
 #ifndef INC_LRA_LRA_ERROR_H_
 #define INC_LRA_LRA_ERROR_H_
 
+/* includes */
+
+// includes user defined macros, should be the top of included files
+#include "lra/lra_user_config.h"
+
 /* enums */
 typedef enum {
   LRA_ERR_FAILURE = -1,

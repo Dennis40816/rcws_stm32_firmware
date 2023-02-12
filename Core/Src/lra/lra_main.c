@@ -106,6 +106,10 @@ void LRA_Main_EnterPoint(void) {
   // Flash *2: init end
   LRA_LED_Flash_N(2, 500);
 
+  #ifdef LRA_TEST
+  
+  #endif
+
   while (1) {
     /* feedback */
 
