@@ -25,7 +25,7 @@ typedef enum {
   ADXL355_FIFO_ENTRIES = 0x05,
 
   /* temp */
-  ADXL355_TEMP2  = 0x06,
+  ADXL355_TEMP2 = 0x06,
   ADXL355_TEMP1 = 0x07,
 
   /* newest data */
@@ -52,7 +52,7 @@ typedef enum {
   ADXL355_OFFSET_Y_L = 0x21,
   ADXL355_OFFSET_Z_H = 0x22,
   ADXL355_OFFSET_Z_L = 0x23,
-  
+
   /* ACT related */
   ADXL355_ACT_EN = 0x24,
   ADXL355_ACT_THRESH_H = 0x25,
@@ -79,22 +79,41 @@ typedef enum {
 
   /* Reset */
   ADXL355_Reset = 0x2F,
-}ADXL355_Regs_t;
+} ADXL355_Regs_t;
+
+typedef enum {
+  acc_2g = 0x01,
+  acc_4g = 0x02,
+  acc_8g = 0x03,
+} ADXL355_Ranges_t;
 
 /* public constants */
 
-const uint8_t adxl355_1st_regnum = 17; // before ADXL355_FIFO_DATA
-const uint8_t adxl355_2st_regnum = 18; // after ADXL355_FIFO_DATA
+const uint8_t adxl355_1st_regnum = 17;  // before ADXL355_FIFO_DATA
+const uint8_t adxl355_2nd_regnum = 18;  // after ADXL355_FIFO_DATA
 
 /* structs */
 
 typedef struct {
-  uint16_t nss_pin;
-  uint32_t timeout_ms;       // should > 0
-  GPIO_TypeDef* nss_port;    // set to NULL if you are not using software NSS.
+  uint16_t temp_intercept_lsb;  // default value is 1852;
+  uint16_t nss_pin;  // set to 0 if you want to use uncompenstaed parser in
+                     // ADXL355_Read_Temp()
+  ADXL355_Ranges_t range;  // should be 0x01 ~ 0x03
+  uint32_t timeout_ms;     // should > 0
+  GPIO_TypeDef* nss_port;  // set to NULL if you are not using software NSS.
   SPI_HandleTypeDef* hspi;
-}ADXL355_t;
+  float temp_slope;  // set to 0 if you want to use uncompenstaed parser in
+                     // ADXL355_Read_Temp(), should < 0
+  float temp_intercept_Celsius;
+} ADXL355_t;
+
+typedef struct {
+  float data[3];  // x, y, z
+  float t;
+} ADXL355_DataSet_t;
 
 /* public functions */
+
+/* IO functions */
 
 #endif /* INC_DEVICES_ADXL355_H_ */
