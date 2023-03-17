@@ -85,6 +85,8 @@ void LRA_Main_EnterPoint(void) {
 
   LRA_PWM* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
 
+  // create ADXL355 Instance
+
   /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
   if (ret != HAL_OK)
