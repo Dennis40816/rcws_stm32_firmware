@@ -38,6 +38,12 @@
 #include <string.h>
 #include "util/util_spi.h"
 
+/* static functions declarations */
+
+static void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl);
+static void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl);
+static HAL_StatusTypeDef ADXL355_UserConfig(ADXL355_t* const pAdxl);
+
 /* public functions */
 
 /**
@@ -74,10 +80,10 @@ HAL_StatusTypeDef ADXL355_SetRange(ADXL355_t* const pAdxl,
   if (ret != HAL_OK)
     return ret;
 
-  if (old_val & 0b11 == new_range)
+  if ((old_val & 0b11) == new_range)
     return HAL_OK;
 
-  uint8_t new_val = (old_val & (~0b11) | new_range);
+  uint8_t new_val = ((old_val & (~0b11)) | new_range);
   ret = ADXL355_WriteReg(pAdxl, ADXL355_Range, new_val);
 
   if (ret != HAL_OK)
@@ -126,7 +132,7 @@ HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl) {
     return ret;
 
   // calibrate
-  HAL_StatusTypeDef ret = ADXL355_Calibrate(pAdxl);
+  ret = ADXL355_Calibrate(pAdxl);
   if (ret != HAL_OK)
     return ret;
 
@@ -181,7 +187,7 @@ HAL_StatusTypeDef ADXL355_ParseOffset(ADXL355_t* const pAdxl,
   };
 
   // get cache range in ADXL355_t
-  float range_ = ADXL355_GetCacheRange(pAdxl);
+  float range_ = ADXL355_GetRangeCache(pAdxl);
 
   if (range_ == 0.0)
     return HAL_ERROR;
@@ -326,7 +332,7 @@ HAL_StatusTypeDef ADXL355_Read_Offset(ADXL355_t* const pAdxl,
   if (ret != HAL_OK)
     return ret;
 
-  // parse offset (16 bit)
+  return ADXL355_ParseOffset(pAdxl, tmp, pResult);
 }
 
 /**

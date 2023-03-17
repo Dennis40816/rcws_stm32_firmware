@@ -114,6 +114,53 @@ typedef struct {
 
 /* public functions */
 
+HAL_StatusTypeDef ADXL355_GetRange(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_SetRange(ADXL355_t* const pAdxl,
+                                   ADXL355_Ranges_t new_range);
+HAL_StatusTypeDef ADXL355_Calibrate(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl);
+float ADXL355_GetRangeCache(const ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_ParseOffset(ADXL355_t* const pAdxl,
+                                      const uint8_t* const pOffset,
+                                      ADXL355_DataSet_t* const pResult);
+HAL_StatusTypeDef ADXL355_ParseDataSet(ADXL355_t* const pAdxl,
+                                       uint8_t* pData,
+                                       ADXL355_DataSet_t* pResult);
+int8_t ADXL355_ID_Verify(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_SelfTest(ADXL355_t* const pAdxl, uint8_t st);
+HAL_StatusTypeDef ADXL355_Start_Measure(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_Stop_Measure(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_Write_Offset(ADXL355_t* const pAdxl,
+                                       uint8_t* const pOffset);
+HAL_StatusTypeDef ADXL355_Read_Offset(ADXL355_t* const pAdxl,
+                                      ADXL355_DataSet_t* const pResult);
+HAL_StatusTypeDef ADXL355_Read_Temp(ADXL355_t* const pAdxl, float* pResult);
+HAL_StatusTypeDef ADXL355_Read_FIFO(ADXL355_t* const pAdxl,
+                                    uint8_t* const rx_buf,
+                                    uint8_t num);
+HAL_StatusTypeDef ADXL355_Read_NewestData(ADXL355_t* const pAdxl,
+                                          uint8_t* const rx_buf);
+HAL_StatusTypeDef ADXL355_Read_All(ADXL355_t* const pAdxl,
+                                   uint8_t* const rx_buf);
 /* IO functions */
+
+HAL_StatusTypeDef ADXL355_WriteReg(ADXL355_t* const pAdxl,
+                                   const ADXL355_Regs_t iaddr,
+                                   uint8_t val);
+HAL_StatusTypeDef ADXL355_ReadReg(ADXL355_t* const pAdxl,
+                                  const ADXL355_Regs_t iaddr,
+                                  uint8_t* pResult);
+HAL_StatusTypeDef ADXL355_LazyWrite(ADXL355_t* const pAdxl,
+                                    const ADXL355_Regs_t iaddr,
+                                    uint8_t* const tx_buf,
+                                    const int16_t data_size);
+HAL_StatusTypeDef ADXL355_LazyRead(ADXL355_t* const pAdxl,
+                                   const ADXL355_Regs_t iaddr,
+                                   uint8_t* const rx_buf,
+                                   const int16_t data_size);
+HAL_StatusTypeDef ADXL355_RW(ADXL355_t* const pAdxl,
+                             uint8_t* const tx_buf,
+                             uint8_t* const rx_buf,
+                             const int16_t total_size);
 
 #endif /* INC_DEVICES_ADXL355_H_ */
