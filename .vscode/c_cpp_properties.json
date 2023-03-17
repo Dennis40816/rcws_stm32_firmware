@@ -18,7 +18,7 @@
         // },
         {
             // ref: https://stackoverflow.com/questions/72702424/vscode-compilerpath-issue-with-stm32
-            "name": "STM32",
+            "name": "STM32-Windows",
             "includePath": [
                 "${workspaceFolder}/Core/Inc",
                 "${workspaceFolder}/USB_DEVICE/App",

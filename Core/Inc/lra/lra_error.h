@@ -14,9 +14,10 @@ typedef enum {
 } LRA_ERR_t;
 
 typedef enum {
-  LRA_INIT_ERR_I2C_DEVS = 0,
-  LRA_INIT_ERR_MPU6500 = 1,
-  LRA_INIT_ERR_ADXL355 = 2,
+  LRA_INIT_ERR_I2C_DEVS = 1,
+  LRA_INIT_ERR_PWM = 2,
+  LRA_INIT_ERR_MPU6500 = 4,
+  LRA_INIT_ERR_ADXL355 = 8,
 } LRA_Init_Error_Bias_t;
 
 #endif /* INC_LRA_LRA_ERROR_H_ */

@@ -59,45 +59,52 @@ void LRA_Main_EnterPoint(void) {
   DRV2605L_t drv_z = drv_x;
 
   // create pairs structs
-  TCA_DRV_Pair_t tca_drv_x = {
-    .located_ch = 1,
-    .pDrv = &drv_x,
-    .pTca = &tca
-  };
-  TCA_DRV_Pair_t tca_drv_y = {
-    .located_ch = 2,
-    .pDrv = &drv_y,
-    .pTca = &tca
-  };
-  TCA_DRV_Pair_t tca_drv_z = {
-    .located_ch = 3,
-    .pDrv = &drv_z,
-    .pTca = &tca
-  };
+  TCA_DRV_Pair_t tca_drv_x = {.located_ch = 1, .pDrv = &drv_x, .pTca = &tca};
+  TCA_DRV_Pair_t tca_drv_y = {.located_ch = 2, .pDrv = &drv_y, .pTca = &tca};
+  TCA_DRV_Pair_t tca_drv_z = {.located_ch = 3, .pDrv = &drv_z, .pTca = &tca};
 
   // create I2C_Devs struct
-  LRA_I2C_Devs_t i2c_devs = {
-    .pair_count = LRA_MOTOR_NUM,
-    .pDevPair = {
-      &tca_drv_x,
-      &tca_drv_y,
-      &tca_drv_z
-    }
+  LRA_I2C_Devs_t i2c_devs = {.pair_count = LRA_MOTOR_NUM,
+                             .pDevPair = {&tca_drv_x, &tca_drv_y, &tca_drv_z}};
+
+  // create PWM array
+  LRA_PWM pwm_x = {
+      .htim = &htim2,
+      .ch = TIM_CHANNEL_1,
   };
 
-  // init I2C devs
+  LRA_PWM pwm_y = {
+      .htim = &htim2,
+      .ch = TIM_CHANNEL_2,
+  };
+
+  LRA_PWM pwm_z = {
+      .htim = &htim2,
+      .ch = TIM_CHANNEL_3,
+  };
+
+  LRA_PWM* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
+
+  /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
-  if(ret != HAL_OK)
+  if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_I2C_DEVS);
 
-  /* MPU6500 init */
+  /* PWM init */
+  for (int i = 0; i < LRA_MOTOR_NUM; i++) {
+    ret = Lra_PWM_Init(pwm_arr[i], LRA_DEFAULT_PWM_FREQ);
+    if (ret != HAL_OK)
+      error |= (1 << LRA_INIT_ERR_PWM);
+  }
 
-  if(ret != HAL_OK)
+  /* TODO: MPU6500 init */
+
+  if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_MPU6500);
 
-  /* ADXL355 init */
+  /* TODO: ADXL355 init */
 
-  if(ret != HAL_OK)
+  if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_ADXL355);
 
   // you should check error code here
@@ -106,10 +113,54 @@ void LRA_Main_EnterPoint(void) {
   // Flash *2: init end
   LRA_LED_Flash_N(2, 500);
 
+  /* parameters used in main loop */
+
+  /**
+   * @brief pwm related variables \r\n
+   *
+   * pwm_flag
+   *
+   * val 0 0 0 0 0 0 0 0
+   *     - - - - - - - -
+   * bit 7 6 5 4 3 2 1 0
+   *
+   * 0th bit: update pwm freq
+   * 1th bit: update pwm duty cycle
+   *
+   * check enum LRA_PWM_UPDATE_FLAG in lra_main.h
+   */
+  uint8_t pwm_flag = 0;
+
+  uint32_t pwm_new_freq[LRA_MOTOR_NUM] = {
+      LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ};
+  uint16_t pwm_new_duty[LRA_MOTOR_NUM] = {
+      LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY};
+
+  // TODO: usb buffers
+
+  // TODO: acc buffers
+
   while (1) {
+
+    /* Loop update */
+
+    // cmd update flag
+
+    // internal update flag
+
+    /* usb parser */
+
+    // usb receive flag & parser
+
+    // usb tranmit flag
+
+    // --------------------------------
+
     /* feedback */
 
     /* calculate new pwm signal */
+
+    /* update pwm singal */
 
     /* transport data to Rasp */
   }

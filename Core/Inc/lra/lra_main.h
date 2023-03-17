@@ -12,8 +12,17 @@
 
 // comment next line if you don't need to debug
 #define LRA_DEBUG
+
 // comment next line to suspend system info send to Rasp
 #define LRA_SYSTEM_INFO
+
+/* enums */
+
+// UEV for update event
+typedef enum {
+  LRA_PWM_FREQ_UEV_BIT = 0,
+  LRA_PWM_DUTY_USV_BIT = 1,
+}LRA_PWM_UPDATE_FLAG;
 
 /* includes */
 
@@ -23,6 +32,14 @@
 #include <lra/lra_i2c_devices.h>
 #include <lra/lra_usb.h>
 #include <lra/lra_LED.h>
+#include <lra/lra_pwm.h>
+
+/* macros */
+
+#define LRA_DEFAULT_PWM_FREQ (128 * 175)
+
+// half of 1000 (1000‰)
+#define LRA_DEFAULT_PWM_DUTY (500)
 
 /* public functions */
 
