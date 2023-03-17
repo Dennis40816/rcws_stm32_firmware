@@ -8,6 +8,6 @@
 #ifndef INC_UTIL_UTIL_SPI_H_
 #define INC_UTIL_UTIL_SPI_H_
 
-
+/* macros */
 
 #endif /* INC_UTIL_UTIL_SPI_H_ */

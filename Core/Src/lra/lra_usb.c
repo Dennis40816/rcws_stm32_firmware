@@ -60,7 +60,8 @@ LRA_USB_Mode_t LRA_Get_USB_Mode() {
 /**
  * @brief LRA printf-like usb print function, max length is 256 characters. Note
  * that this function maintains a static stack buffer with size 256.
- *
+ * 
+ * @details It's a non-blocking
  * @param format
  * @param ...
  */

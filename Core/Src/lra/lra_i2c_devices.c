@@ -47,7 +47,7 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     LRA_USB_Print("LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n", i);
     #endif
 
-    ret = DRV2605L_WriteReg(pPair->pDrv, Mode, 0x07);
+    ret = DRV2605L_WriteReg(pPair->pDrv, DRV2605L_Mode, 0x07);
 
     // reset device
     ret = DRV2605L_SoftReset(pPair->pDrv);
@@ -66,7 +66,7 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
 
     // check everything is ok. Depending on LRA_main.h
     #ifdef LRA_DEBUG 
-    uint8_t test[DRV_Total_Reg_Num] = {0};
+    uint8_t test[DRV2605L_Total_Reg_Num] = {0};
     ret = DRV2605L_Read_All(pPair->pDrv, test);
     if (ret != HAL_OK)
       return ret;

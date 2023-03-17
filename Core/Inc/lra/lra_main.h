@@ -26,7 +26,10 @@ typedef enum {
 
 /* includes */
 
-#include <stm32f4xx_hal.h>
+#include "stm32f4xx_hal.h"
+
+// includes user defined macros, should be the top of included files
+#include "lra/lra_user_config.h"
 
 #include <lra/lra_error.h>
 #include <lra/lra_i2c_devices.h>

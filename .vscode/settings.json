@@ -13,7 +13,8 @@
     "lra_main.h": "c",
     "lra_pwm.h": "c",
     "stm32f4xx_hal_tim.h": "c",
-    "lra_util.h": "c"
+    "lra_util.h": "c",
+    "lra_i2c_devices.h": "c"
   }, 
 
   /* C/C++ */

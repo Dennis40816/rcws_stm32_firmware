@@ -12,6 +12,9 @@
 
 #include <stm32f4xx_hal.h>
 
+// includes user defined macros, should be the top of included files
+#include "lra/lra_user_config.h"
+
 /* exported enums */ 
 
 typedef enum {
