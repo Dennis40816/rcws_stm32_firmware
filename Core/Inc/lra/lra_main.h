@@ -31,11 +31,8 @@ typedef enum {
 // includes user defined macros, should be the top of included files
 #include "lra/lra_user_config.h"
 
-#include <lra/lra_error.h>
-#include <lra/lra_i2c_devices.h>
-#include <lra/lra_usb.h>
-#include <lra/lra_LED.h>
-#include <lra/lra_pwm.h>
+// for main.c (not lra_main.c)
+#include "lra/lra_LED.h"
 
 /* macros */
 

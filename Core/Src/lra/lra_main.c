@@ -7,10 +7,23 @@
 
 /* includes */
 
+// contrains user config header, should be the top of include files
 #include "lra/lra_main.h"
+
 #include "main.h"
 
+// includes device related headers
+#include "devices/adxl355.h"
+#include "lra/lra_i2c_devices.h"
+
+#include "lra/lra_error.h"
+#include "lra/lra_usb.h"
+
+#include "lra/lra_pwm.h"
+
 /* external variables */
+
+
 
 // from main.c
 extern I2C_HandleTypeDef hi2c1;
