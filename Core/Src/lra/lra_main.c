@@ -208,26 +208,12 @@ void LRA_Main_EnterPoint(void) {
 }
 
 /**
- * @brief
+ * @brief Init STM32 related handles
  *
  * @return HAL_StatusTypeDef
  */
 HAL_StatusTypeDef LRA_Main_System_Init(void) {
   // System interrupt related
   HAL_TIM_Base_Start_IT(&htim6);
-
-  // DRV init
-  DRV2605L_t drvx = {
-      .dev_addr = drv2605l_default_addr,
-      .timeout_ms = drv2605l_default_timeout_ms,
-      .en_pin = 0,
-      .en_port = NULL,
-      .hi2c = &hi2c1,
-  };
-
-  uint8_t drv_buf[DRV2605L_Total_Reg_Num] = {0};
-  // combine into lra_i2c_devices later
-  DRV2605L_Read_All(&drvx, drv_buf);
-
   return HAL_OK;
 }
