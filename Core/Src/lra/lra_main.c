@@ -137,11 +137,33 @@ void LRA_Main_EnterPoint(void) {
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_USB);
 
+  /* Buffer Init */
+  uint8_t LRA_USB_RX_buf[LRA_USB_BUFFER_SIZE] = {0};
+
+  uint8_t LRA_USB_TX_buf1[LRA_USB_BUFFER_SIZE] = {0};
+  uint8_t LRA_USB_Tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
+
+  uint8_t LRA_ACC_buf1[LRA_ACC_BUFFER_SIZE] = {0};
+  uint8_t LRA_ACC_buf2[LRA_ACC_BUFFER_SIZE] = {0};
+
+  LRA_DualBuf_t LRA_USB_TX_dbuf = {
+      .buf_full = {0, 0},
+      .buf_index = {0, 0},
+      .buf_size = {LRA_USB_BUFFER_SIZE, LRA_USB_BUFFER_SIZE},
+      .cur_buf = 0,
+      .dbuf = {LRA_USB_TX_buf1, LRA_USB_Tx_buf2},
+  };
+
+  LRA_DualBuf_t LRA_USB_TX_dbuf = {
+      .buf_full = {0, 0},
+      .buf_index = {0, 0},
+      .buf_size = {LRA_ACC_BUFFER_SIZE, LRA_ACC_BUFFER_SIZE},
+      .cur_buf = 0,
+      .dbuf = {LRA_ACC_buf1, LRA_ACC_buf2},
+  };
+
   // you should check error code here
   error;
-
-  // Flash *2: init end
-  LRA_LED_Flash_N(2, 500);
 
   /* parameters used in main loop */
 
@@ -167,14 +189,13 @@ void LRA_Main_EnterPoint(void) {
   uint16_t pwm_duty_cmd[LRA_MOTOR_NUM] = {
       LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY};
 
-  // TODO: usb buffers
-
-  // TODO: acc buffers
-
   // System enable
   for (int i = 0; i < LRA_MOTOR_NUM; i++) {
     Lra_PWM_Enable(pwm_arr[i]);
   }
+
+  // Flash *2: init end
+  LRA_LED_Flash_N(2, 500);
 
   // Test code
 
