@@ -311,7 +311,7 @@ HAL_StatusTypeDef ADXL355_Stop_Measure(ADXL355_t* const pAdxl) {
 }
 
 /**
- * @brief Set Offset (from 0x1E to 0x23) to pOffset
+ * @brief Set acceleration offset (from 0x1E to 0x23) from pOffset
  *
  * @param pAdxl
  * @param pOffset required len == 6
