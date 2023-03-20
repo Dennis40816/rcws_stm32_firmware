@@ -89,8 +89,8 @@ typedef enum {
 
 /* public constants */
 
-const uint8_t adxl355_1st_regnum = 17;  // before ADXL355_FIFO_DATA
-const uint8_t adxl355_2nd_regnum = 18;  // after ADXL355_FIFO_DATA
+extern const uint8_t adxl355_1st_regnum;  // before ADXL355_FIFO_DATA
+extern const uint8_t adxl355_2nd_regnum;  // after ADXL355_FIFO_DATA
 
 /* structs */
 

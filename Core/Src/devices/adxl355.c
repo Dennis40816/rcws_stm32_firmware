@@ -38,6 +38,11 @@
 #include <string.h>
 #include "util/util_spi.h"
 
+/* extern variable assignment */
+
+const uint8_t adxl355_1st_regnum = 17;
+const uint8_t adxl355_2nd_regnum = 18;
+
 /* static functions declarations */
 
 static void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl);
