@@ -8,7 +8,7 @@
 #ifndef INC_LRA_LRA_MAIN_H_
 #define INC_LRA_LRA_MAIN_H_
 
-/* predefined macros */ 
+/* predefined macros */
 
 // comment next line if you don't need to debug
 #define LRA_DEBUG
