@@ -16,6 +16,8 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_tim.h"
 
+#include "lra/lra_user_config.h"
+
 /* exported variables */
 
 /* macros */
@@ -36,45 +38,17 @@ typedef enum {
 typedef struct {
   TIM_HandleTypeDef* htim;
   LRA_TIM_CH ch;
-} LRA_PWM;
+} LRA_PWM_t;
 
 /* public functions */
 
-HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM* handle, uint32_t freq_hz);
-
-HAL_StatusTypeDef Lra_PWM_Enable(LRA_PWM* handle);
-
-HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM* handle);
-
-/**
- * @brief Dynamicaly set PWM frequency (internal function).
- *
- * @version 1.0
- * @note
- * V1.0: This function try not to change the TIMx->PSC register. Therefore, only
- * TIMx->ARR register will be changed. Therefore, the maximum PWM frequency
- * should be less than HCLK(we assume APB1 and APB2 timer clock is same as HCLK)
- * / TIMx->PSC.
- * @note ----------------------------------------------------------------
- * @note If hclk / (psc + 1) / freq_hz == 0, this function will return HAL_ERROR
- * and do nothing.
- *
- * @param hpwm
- * @param freq_hz desired frequency in Hz
- * @return HAL_StatusTypeDef
- */
-HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM* handle, uint32_t freq_hz);
-
-/**
- * @brief
- *
- * @warning This function can only calculate 16 bit compare register (<=65536)
- * @param handle
- * @param duty_permil Duty cycle in permils. e.g. 896 ‰ = 896 = 89.6%. Therefore
- * duty_permil should be less than 1000.
- * @return HAL_StatusTypeDef
- */
-HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM* handle,
+HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle,
+                               uint32_t freq_hz,
+                               uint16_t duty);
+HAL_StatusTypeDef Lra_PWM_Enable(LRA_PWM_t* handle);
+HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM_t* handle);
+HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle, uint32_t freq_hz);
+HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
                                            uint16_t duty_permil);
 
 #endif /* INC_LRA_LRA_PWM_H_ */

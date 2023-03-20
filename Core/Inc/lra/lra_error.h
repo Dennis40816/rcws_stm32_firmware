@@ -23,6 +23,7 @@ typedef enum {
   LRA_INIT_ERR_PWM = 2,
   LRA_INIT_ERR_MPU6500 = 4,
   LRA_INIT_ERR_ADXL355 = 8,
+  LRA_INIT_ERR_USB = 16
 } LRA_Init_Error_Bias_t;
 
 #endif /* INC_LRA_LRA_ERROR_H_ */

@@ -22,7 +22,7 @@
 typedef enum {
   LRA_PWM_FREQ_UEV_BIT = 0,
   LRA_PWM_DUTY_USV_BIT = 1,
-}LRA_PWM_UPDATE_FLAG;
+} LRA_PWM_UPDATE_FLAG;
 
 /* includes */
 

@@ -10,12 +10,13 @@
 
 /* public functions */
 
-HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM* handle, uint32_t freq_hz) {
+HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle, uint32_t freq_hz, uint16_t duty) {
   if (handle == NULL || handle->htim == NULL)
     return HAL_ERROR;
 
   uint8_t ret = 0;
 
+  // Disable PWM channel first
   ret = Lra_PWM_Disable(handle);
   if (ret != HAL_OK)
     return ret;
@@ -26,24 +27,41 @@ HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM* handle, uint32_t freq_hz) {
 
   // set duty cycle to 50% (accroding to DRV2605L datasheet, in open pwm control
   // mode 50 % duty cycle represent 0 V  output)
-  return Lra_PWM_Dynamic_Set_Duty(handle, 500);
+  return Lra_PWM_Dynamic_Set_Duty(handle, duty);
 }
 
-HAL_StatusTypeDef Lra_PWM_Enable(LRA_PWM* handle) {
+HAL_StatusTypeDef Lra_PWM_Enable(LRA_PWM_t* handle) {
   if (handle == NULL || handle->htim == NULL)
     return HAL_ERROR;
 
   return HAL_TIM_PWM_Start(handle->htim, handle->ch);
 }
 
-HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM* handle) {
+HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM_t* handle) {
   if (handle == NULL || handle->htim == NULL)
     return HAL_ERROR;
 
   return HAL_TIM_PWM_Stop(handle->htim, handle->ch);
 }
 
-HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM* handle, uint32_t freq_hz) {
+/**
+ * @brief Dynamicaly set PWM frequency (internal function).
+ *
+ * @version 1.0
+ * @note
+ * V1.0: This function try not to change the TIMx->PSC register. Therefore, only
+ * TIMx->ARR register will be changed. Therefore, the maximum PWM frequency
+ * should be less than HCLK(we assume APB1 and APB2 timer clock is same as HCLK)
+ * / TIMx->PSC.
+ * @note ----------------------------------------------------------------
+ * @note If hclk / (psc + 1) / freq_hz == 0, this function will return HAL_ERROR
+ * and do nothing.
+ *
+ * @param hpwm
+ * @param freq_hz desired frequency in Hz
+ * @return HAL_StatusTypeDef
+ */
+HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle, uint32_t freq_hz) {
   if (handle == NULL || handle->htim == NULL || freq_hz == 0)
     return HAL_ERROR;
 
@@ -67,8 +85,18 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM* handle, uint32_t freq_hz) {
   return HAL_OK;
 }
 
+/**
+ * @brief
+ *
+ * @warning This function can only calculate 16 bit compare register (<=65536)
+ * @param handle
+ * @param duty_permil Duty cycle in permils. e.g. 896 ‰ = 896 = 89.6%. Therefore
+ * duty_permil should be less than 1000.
+ * @return HAL_StatusTypeDef
+ * 
+ */
 /* XXX, need to be optimized */
-HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM* handle,
+HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
                                            uint16_t duty_permil) {
   /* check parameters are valid */
   if (handle == NULL || handle->htim == NULL || duty_permil > 1000)
@@ -86,7 +114,7 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM* handle,
   volatile uint32_t ARR_cache = __HAL_TIM_GET_AUTORELOAD(handle->htim);
 
   // TODO: make ARR_maximum become to 2^32 - 1 (for TIM2 and TIM8)
-  if (ARR_cache < ARR_min || ARR_cache > 65535) {
+  if (ARR_cache < ARR_min || ARR_cache > 65535)
     return HAL_ERROR;
 
     /* TODO: calculate new CCR value */
