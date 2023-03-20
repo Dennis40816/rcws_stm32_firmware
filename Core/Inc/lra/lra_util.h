@@ -10,10 +10,10 @@
 
 /* includes */
 
+#include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_rcc.h"
 
 /* public funtions -- timer */
 
-bool Lra_Check_SysClk(uint32_t hz);
 
 #endif /* INC_LRA_LRA_UTIL_H_ */

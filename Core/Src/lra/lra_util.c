@@ -12,9 +12,6 @@
 
 /* public functios */
 
-bool Lra_Check_SysClk(uint32_t hz) {
-  return HAL_RCC_GetHCLKFreq() == hz;
-}
 
 
 
