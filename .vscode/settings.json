@@ -1,6 +1,6 @@
 {
-  "stm32-for-vscode.openOCDPath": false,
-  "stm32-for-vscode.armToolchainPath": false,
+  "stm32-for-vscode.openOCDPath": "false",
+  "stm32-for-vscode.armToolchainPath": "false",
   "files.associations": {
     "usbd_cdc_if.h": "c",
     "stdarg.h": "c",
@@ -14,11 +14,13 @@
     "lra_pwm.h": "c",
     "stm32f4xx_hal_tim.h": "c",
     "lra_util.h": "c",
-    "lra_i2c_devices.h": "c"
+    "lra_i2c_devices.h": "c",
+    "lra_user_config.h": "c",
+    "lra_error.h": "c"
   }, 
 
   /* C/C++ */
 
   "C_Cpp.clang_format_style": "{ BasedOnStyle: Chromium, IndentWidth: 2}",
-  "stm32-for-vscode.makePath": false,
+  "stm32-for-vscode.makePath": "false",
 }
