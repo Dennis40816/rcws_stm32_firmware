@@ -71,7 +71,7 @@ void LRA_Main_EnterPoint(void) {
   DRV2605L_t drv_y = drv_x;
   DRV2605L_t drv_z = drv_x;
 
-  // create pairs structs
+  // create TCA9546A and DRV2605L pair structs
   TCA_DRV_Pair_t tca_drv_x = {.located_ch = 1, .pDrv = &drv_x, .pTca = &tca};
   TCA_DRV_Pair_t tca_drv_y = {.located_ch = 2, .pDrv = &drv_y, .pTca = &tca};
   TCA_DRV_Pair_t tca_drv_z = {.located_ch = 3, .pDrv = &drv_z, .pTca = &tca};
@@ -142,32 +142,41 @@ void LRA_Main_EnterPoint(void) {
    * 0th bit: update pwm freq
    * 1th bit: update pwm duty cycle
    *
-   * check enum LRA_PWM_UPDATE_FLAG in lra_main.h
+   * check enum LRA_PWM_FLAG in lra_main.h also
    */
   uint8_t pwm_flag = 0;
 
-  uint32_t pwm_new_freq[LRA_MOTOR_NUM] = {
+  // CMD
+  uint32_t pwm_freq_cmd[LRA_MOTOR_NUM] = {
       LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ};
-  uint16_t pwm_new_duty[LRA_MOTOR_NUM] = {
+  uint16_t pwm_duty_cmd[LRA_MOTOR_NUM] = {
       LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY};
 
   // TODO: usb buffers
 
   // TODO: acc buffers
 
+  // System enable
+  for (int i = 0; i < LRA_MOTOR_NUM; i++) {
+    Lra_PWM_Enable(pwm_arr[i]);
+  }
+
+  // Test code
+
   while (1) {
-
     /* Loop update */
-
-    // cmd update flag
-
-    // internal update flag
 
     /* usb parser */
 
     // usb receive flag & parser
 
     // usb tranmit flag
+
+    // cmd update flag
+
+    // internal update flag
+
+
 
     // --------------------------------
 
