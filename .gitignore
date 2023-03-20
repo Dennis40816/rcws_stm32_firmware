@@ -49,3 +49,5 @@ Debug
 # Libraries
 /lib
 
+# User Defined
+Files/tmp/*
