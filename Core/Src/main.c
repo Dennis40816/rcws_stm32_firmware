@@ -126,11 +126,7 @@ int main(void)
   led_state = LRA_LED_FLASH;
 
   while (1)
-  {
-    #ifdef LRA_DEBUG
-
-    #endif
-    
+  { 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
