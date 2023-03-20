@@ -17,7 +17,7 @@ LEDStates_t led_state = LRA_LED_DOWN;
 /* public functions */
 
 /**
- * @brief LED flash n time
+ * @brief LED flash n time, blocked function
  * 
  * @param n 
  * @param delay 
