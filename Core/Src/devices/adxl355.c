@@ -588,7 +588,7 @@ HAL_StatusTypeDef ADXL355_LazyWrite(ADXL355_t* const pAdxl,
  * @brief This function will fix the problem of lacking iaddr and R bit at the
  * begining of the buffer, so you can use it if you are lazy to add (iaddr <<
  * 1 | 0) at the begin of tx_buf. But it doesn't support read from
- * ADXL355_FIFO_DATA.
+ * ADXL355_FIFO_DATA (for the usage of ADXL355_MAX_RW_REG_NUM_ATONCE).
  *
  * @param hspi
  * @param iaddr
