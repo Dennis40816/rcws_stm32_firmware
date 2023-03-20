@@ -23,8 +23,6 @@
 
 /* external variables */
 
-
-
 // from main.c
 extern I2C_HandleTypeDef hi2c1;
 
@@ -138,7 +136,7 @@ void LRA_Main_EnterPoint(void) {
   ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_USB);
-    
+
   // you should check error code here
   error;
 
@@ -192,8 +190,6 @@ void LRA_Main_EnterPoint(void) {
     // cmd update flag
 
     // internal update flag
-
-
 
     // --------------------------------
 

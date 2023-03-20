@@ -49,8 +49,10 @@ typedef enum {
 /* extern variables -- buffers */
 
 uint8_t LRA_USB_RX_buf[LRA_USB_BUFFER_SIZE];
+
 uint8_t LRA_USB_TX_buf1[LRA_USB_BUFFER_SIZE];
 uint8_t LRA_USB_Tx_buf2[LRA_USB_BUFFER_SIZE];
+
 uint8_t LRA_ACC_buf1[LRA_ACC_BUFFER_SIZE];
 uint8_t LRA_ACC_buf2[LRA_ACC_BUFFER_SIZE];
 
