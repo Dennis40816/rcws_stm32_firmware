@@ -81,24 +81,36 @@ void LRA_Main_EnterPoint(void) {
                              .pDevPair = {&tca_drv_x, &tca_drv_y, &tca_drv_z}};
 
   // create PWM array
-  LRA_PWM pwm_x = {
+  LRA_PWM_t pwm_x = {
       .htim = &htim2,
       .ch = TIM_CHANNEL_1,
   };
 
-  LRA_PWM pwm_y = {
+  LRA_PWM_t pwm_y = {
       .htim = &htim2,
       .ch = TIM_CHANNEL_2,
   };
 
-  LRA_PWM pwm_z = {
+  LRA_PWM_t pwm_z = {
       .htim = &htim2,
       .ch = TIM_CHANNEL_3,
   };
 
-  LRA_PWM* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
+  LRA_PWM_t* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
 
-  // create ADXL355 Instance
+  /* create ADXL355 Instance */
+  ADXL355_t adxl355 = {
+      .hspi = &hspi3,
+      .nss_pin = 0,
+      .nss_port = NULL,
+      .range = acc_2g,
+      .timeout_ms = 1,
+
+      // use temp default parser, change these parameters after adjustment
+      .temp_intercept_lsb = 0,
+      .temp_slope = 0.0,
+      .temp_intercept_Celsius = 0.0,
+  };
 
   /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
@@ -107,7 +119,7 @@ void LRA_Main_EnterPoint(void) {
 
   /* PWM init */
   for (int i = 0; i < LRA_MOTOR_NUM; i++) {
-    ret = Lra_PWM_Init(pwm_arr[i], LRA_DEFAULT_PWM_FREQ);
+    ret = Lra_PWM_Init(pwm_arr[i], LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_DUTY);
     if (ret != HAL_OK)
       error |= (1 << LRA_INIT_ERR_PWM);
   }
@@ -118,10 +130,15 @@ void LRA_Main_EnterPoint(void) {
     error |= (1 << LRA_INIT_ERR_MPU6500);
 
   /* TODO: ADXL355 init */
-
+  ret = ADXL355_Init(&adxl355);
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_ADXL355);
 
+  /* USB Init */
+  ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
+  if (ret != HAL_OK)
+    error |= (1 << LRA_INIT_ERR_USB);
+    
   // you should check error code here
   error;
 
