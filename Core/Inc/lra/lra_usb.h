@@ -17,6 +17,9 @@
 
 /* exported variables */
 
+// define in lra_main.c
+extern uint8_t LRA_USB_DTR_flag;
+
 /* macros */
 
 /* enums */

@@ -21,7 +21,10 @@
 
 #include "lra/lra_pwm.h"
 
-/* external variables */
+/* external variables definitions */
+
+// init dtr flag, extern
+uint8_t LRA_USB_DTR_flag;
 
 // from main.c
 extern I2C_HandleTypeDef hi2c1;
@@ -46,9 +49,10 @@ void LRA_Main_EnterPoint(void) {
   // create error status variable
   uint8_t error = 0;
 
-  /* I2C devices init */
-
   HAL_StatusTypeDef ret;
+
+  // dtr flag assignment init
+  LRA_USB_DTR_flag = 0;
 
   // create devices' structs
   TCA9546_t tca = {

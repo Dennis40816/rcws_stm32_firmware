@@ -23,6 +23,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
+#include "lra/lra_usb.h"
 #include "lra/lra_LED.h"
 /* USER CODE END INCLUDE */
 
@@ -228,10 +229,16 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
     break;
 
-    case CDC_SET_CONTROL_LINE_STATE:
-
-    break;
-
+    case CDC_SET_CONTROL_LINE_STATE: {
+      USBD_SetupReqTypedef * req = (USBD_SetupReqTypedef *)pbuf;
+      if(req->wValue & 0x0001 != 0) {
+        // DTR set
+        // This flag is declared in "lra/lra_usb.h" and is defined
+        // in "lra/lra_main.c"
+        LRA_USB_DTR_flag = !LRA_USB_DTR_flag;
+      }
+      break;
+    }
     case CDC_SEND_BREAK:
 
     break;
