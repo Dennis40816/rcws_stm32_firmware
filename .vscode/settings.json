@@ -16,7 +16,8 @@
     "lra_util.h": "c",
     "lra_i2c_devices.h": "c",
     "lra_user_config.h": "c",
-    "lra_error.h": "c"
+    "lra_error.h": "c",
+    "usbd_conf.h": "c"
   }, 
 
   /* C/C++ */
