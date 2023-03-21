@@ -178,7 +178,10 @@ void LRA_Main_EnterPoint(void) {
   };
 
   // you should check error code here
-  error;
+  #ifdef LRA_SYSTEM_INFO
+  if(error)
+    LRA_USB_Print("Init error code: %x", error);
+  #endif
 
   /* parameters used in main loop */
 
