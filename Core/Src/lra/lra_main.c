@@ -138,20 +138,20 @@ void LRA_Main_EnterPoint(void) {
     error |= (1 << LRA_INIT_ERR_USB);
 
   /* Buffer Init */
-  uint8_t LRA_USB_RX_buf[LRA_USB_BUFFER_SIZE] = {0};
+  uint8_t LRA_USB_Rx_buf[LRA_USB_BUFFER_SIZE] = {0};
 
-  uint8_t LRA_USB_TX_buf1[LRA_USB_BUFFER_SIZE] = {0};
+  uint8_t LRA_USB_Tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
   uint8_t LRA_USB_Tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
 
   uint8_t LRA_ACC_buf1[LRA_ACC_BUFFER_SIZE] = {0};
   uint8_t LRA_ACC_buf2[LRA_ACC_BUFFER_SIZE] = {0};
 
-  LRA_DualBuf_t LRA_USB_TX_dbuf = {
+  LRA_DualBuf_t LRA_USB_Tx_dbuf = {
       .buf_full = {0, 0},
       .buf_index = {0, 0},
       .buf_size = {LRA_USB_BUFFER_SIZE, LRA_USB_BUFFER_SIZE},
       .cur_buf = 0,
-      .dbuf = {LRA_USB_TX_buf1, LRA_USB_Tx_buf2},
+      .dbuf = {LRA_USB_Tx_buf1, LRA_USB_Tx_buf2},
   };
 
   LRA_DualBuf_t LRA_ACC_dbuf = {

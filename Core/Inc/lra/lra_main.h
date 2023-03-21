@@ -67,10 +67,10 @@ typedef struct {
 
 /* extern variables -- buffers */
 
-extern uint8_t LRA_USB_RX_buf[];
+extern uint8_t LRA_USB_Rx_buf[];
 
-extern LRA_DualBuf_t LRA_USB_TX_dbuf;
-extern LRA_DualBuf_t LRA_USB_TX_dbuf;
+extern LRA_DualBuf_t LRA_USB_Tx_dbuf;
+extern LRA_DualBuf_t LRA_ACC_dbuf;
 
 /* public functions */
 
