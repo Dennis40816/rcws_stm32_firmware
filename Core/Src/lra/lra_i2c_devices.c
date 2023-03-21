@@ -8,10 +8,8 @@
 /* includes */
 
 #include "lra/lra_i2c_devices.h"
-
-#ifdef LRA_SYSTEM_INFO 
+ 
 #include "lra/lra_usb.h"
-#endif
 
 /* public functions */
 
@@ -43,9 +41,7 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     if ( device_verify != HAL_OK)
       continue;
 
-    #ifdef LRA_SYSTEM_INFO
     LRA_USB_Print("LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n", i);
-    #endif
 
     ret = DRV2605L_WriteReg(pPair->pDrv, DRV2605L_Mode, 0x07);
 
@@ -72,8 +68,6 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
       return ret;
     #endif
 
-    #ifdef LRA_SYSTEM_INFO
-    #endif
   }
 
   return HAL_OK;
