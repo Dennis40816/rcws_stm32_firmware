@@ -154,7 +154,7 @@ void LRA_Main_EnterPoint(void) {
       .dbuf = {LRA_USB_TX_buf1, LRA_USB_Tx_buf2},
   };
 
-  LRA_DualBuf_t LRA_USB_TX_dbuf = {
+  LRA_DualBuf_t LRA_ACC_dbuf = {
       .buf_full = {0, 0},
       .buf_index = {0, 0},
       .buf_size = {LRA_ACC_BUFFER_SIZE, LRA_ACC_BUFFER_SIZE},
