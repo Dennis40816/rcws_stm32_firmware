@@ -114,6 +114,17 @@ void LRA_Main_EnterPoint(void) {
       .temp_intercept_Celsius = 0.0,
   };
 
+  #ifdef LRA_SYSTEM_INFO
+  while (!LRA_USB_DTR_flag) {
+    /**
+     * This code block will block while waiting for the USB COM port to open. 
+     * The blocking behavior is only enabled when LRA_SYSTEM_INFO is defined. 
+     * If LRA_SYSTEM_INFO is defined, LRA_I2C_Devs_Init will send a series of USB strings, which 
+     * could result in message omission if the host USB COM port is not open before transmitting.
+     */
+  }
+  #endif
+
   /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
   if (ret != HAL_OK)
