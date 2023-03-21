@@ -16,7 +16,7 @@
 // comment next line to suspend system info send to Rasp
 #define LRA_SYSTEM_INFO
 
-// define usb bMaxPower by setting USBD_MAX_POWER before usbd_def.h
+// define usb bMaxPower by setting USBD_MAX_POWER before usbd_def.h, 250 * 2 = 500 mA
 #define USBD_MAX_POWER (250)
 
 #endif /* INC_LRA_LRA_USER_CONFIG_H_ */
