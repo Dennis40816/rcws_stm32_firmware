@@ -13,18 +13,13 @@
 #include "main.h"
 
 // includes device related headers
-#include "devices/adxl355.h"
+#include "lra/lra_spi_devices.h"
 #include "lra/lra_i2c_devices.h"
 
 #include "lra/lra_error.h"
 #include "lra/lra_usb.h"
 
 #include "lra/lra_pwm.h"
-
-/* external variables definitions */
-
-// init dtr flag, extern
-uint8_t LRA_USB_DTR_flag;
 
 // from main.c
 extern I2C_HandleTypeDef hi2c1;
@@ -52,7 +47,7 @@ void LRA_Main_EnterPoint(void) {
   HAL_StatusTypeDef ret;
 
   // dtr flag assignment init
-  LRA_USB_DTR_flag = 0;
+  lra_usb_dtr_flag = 0;
 
   // create devices' structs
   TCA9546_t tca = {

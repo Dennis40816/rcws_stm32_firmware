@@ -36,42 +36,6 @@ typedef enum {
 
 /* macros */
 
-#define LRA_DEFAULT_PWM_FREQ (128 * 175)
-
-// half of 1000 (1000‰)
-#define LRA_DEFAULT_PWM_DUTY (500)
-
-#define LRA_USB_BUFFER_SIZE (1024)
-#define LRA_ACC_BUFFER_SIZE (1024)
-
-/* structs */
-
-/**
- * @brief A struct for double buffer
- *
- * @param cur_buf current activate buffer index, 0 or 1.
- * @param buf_full show buffer can't do next operation, 1 for full.
- * @param dbuf the buffer porinter array to store two buffers address
- * @param buf_size the maximum size of the buffer
- * @param buf_index where the buffer start to write, also equal to current
- * buffer len before writing
- *
- */
-typedef struct {
-  uint8_t cur_buf;
-  uint8_t buf_full[2];
-  uint8_t* dbuf[2];
-  uint16_t buf_size[2];
-  uint16_t buf_index[2];
-} LRA_DualBuf_t;
-
-/* extern variables -- buffers */
-
-extern uint8_t LRA_USB_Rx_buf[];
-
-extern LRA_DualBuf_t LRA_USB_Tx_dbuf;
-extern LRA_DualBuf_t LRA_ACC_dbuf;
-
 /* public functions */
 
 void LRA_Main_EnterPoint(void);

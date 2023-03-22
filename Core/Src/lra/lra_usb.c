@@ -15,9 +15,21 @@
 // use CDC_Transmit_FS
 #include "usbd_cdc_if.h"
 
+/* extern variables definitions */
+
+uint8_t lra_usb_dtr_flag;
+uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE];
+uint8_t lra_usb_tx_buf[LRA_USB_BUFFER_SIZE];
+uint8_t lra_usb_rx_user_buf[LRA_USB_BUFFER_SIZE];
+
+// fucture usage
+LRA_DualBuf_t lra_usb_tx_dbuf;
+
 /* private variables */
 
-LRA_USB_Mode_t lra_usb_mode = LRA_USB_NONE_MODE;
+static LRA_USB_Mode_t lra_usb_mode = LRA_USB_NONE_MODE;
+static uint8_t lra_usb_rx_flag = LRA_USB_RX_UNSET;
+
 
 /* public functions */
 

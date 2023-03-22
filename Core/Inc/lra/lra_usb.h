@@ -14,11 +14,19 @@
 
 // includes user defined macros, should be the top of included files
 #include "lra/lra_user_config.h"
+#include "lra/lra_util.h"
 
 /* exported variables */
 
-// define in lra_main.c
-extern uint8_t LRA_USB_DTR_flag;
+extern uint8_t lra_usb_dtr_flag;
+
+extern uint8_t lra_usb_rx_buf[];
+extern uint8_t lra_usb_tx_buf[];
+
+extern uint8_t lra_usb_rx_user_buf[];
+
+// future usage
+extern LRA_DualBuf_t lra_usb_tx_dbuf;
 
 /* macros */
 

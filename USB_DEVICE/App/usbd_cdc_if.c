@@ -155,8 +155,8 @@ static int8_t CDC_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
   /* Set Application Buffers */
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, lra_usb_tx_buf, 0);
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, lra_usb_rx_buf);
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -235,7 +235,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
         // DTR set
         // This flag is declared in "lra/lra_usb.h" and is defined
         // in "lra/lra_main.c"
-        LRA_USB_DTR_flag = !LRA_USB_DTR_flag;
+        lra_usb_dtr_flag = !lra_usb_dtr_flag;
       }
       break;
     }
