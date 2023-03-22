@@ -82,9 +82,9 @@ typedef enum {
 } ADXL355_Regs_t;
 
 typedef enum {
-  acc_2g = 0x01,
-  acc_4g = 0x02,
-  acc_8g = 0x03,
+  ADXL355_ACC_2G = 0x01,
+  ADXL355_ACC_4G = 0x02,
+  ADXL355_ACC_8G = 0x03,
 } ADXL355_Ranges_t;
 
 /* public constants */

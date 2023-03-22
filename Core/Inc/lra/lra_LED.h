@@ -21,11 +21,11 @@ typedef enum {
 	LRA_LED_DOWN,
 	LRA_LED_UP,
 	LRA_LED_FLASH
-}LEDStates_t;
+}LRA_LEDStates_t;
 
 /* extern variables */ 
 
-extern LEDStates_t led_state;
+extern LRA_LEDStates_t led_state;
 
 /* public functions */
 

@@ -100,12 +100,14 @@ void LRA_Main_EnterPoint(void) {
 
   LRA_PWM_t* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
 
-  /* create ADXL355 Instance */
+  /* create MPU6500 instance */
+
+  /* create ADXL355 instance */
   ADXL355_t adxl355 = {
       .hspi = &hspi3,
       .nss_pin = 0,
       .nss_port = NULL,
-      .range = acc_2g,
+      .range = ADXL355_ACC_2G,
       .timeout_ms = 1,
 
       // use temp default parser, change these parameters after adjustment

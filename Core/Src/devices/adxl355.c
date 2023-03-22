@@ -127,8 +127,8 @@ HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl) {
     return HAL_ERROR;
 
   // range check for pAdxl->range
-  if (!(pAdxl->range == acc_2g && pAdxl->range == acc_4g &&
-        pAdxl->range == acc_8g))
+  if (!(pAdxl->range == ADXL355_ACC_2G && pAdxl->range == ADXL355_ACC_4G &&
+        pAdxl->range == ADXL355_ACC_8G))
     return HAL_ERROR;
 
   // set range
@@ -154,13 +154,13 @@ float ADXL355_GetRangeCache(const ADXL355_t* const pAdxl) {
   float range_ = 0.0;
 
   switch (pAdxl->range) {
-    case acc_2g:
+    case ADXL355_ACC_2G:
       range_ = 4.096f;  // 2.048 * 2
       break;
-    case acc_4g:
+    case ADXL355_ACC_4G:
       range_ = 8.192f;  // 4.096 * 2
       break;
-    case acc_8g:
+    case ADXL355_ACC_8G:
       range_ = 16.384f;  // 8.192 * 2
       break;
     default:

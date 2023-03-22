@@ -31,13 +31,13 @@ typedef enum {
   TIM_CH2 = TIM_CHANNEL_2,
   TIM_CH3 = TIM_CHANNEL_3,
   TIM_CH4 = TIM_CHANNEL_4,
-} LRA_TIM_CH;
+} LRA_TIM_Ch_t;
 
 /* structs */
 
 typedef struct {
   TIM_HandleTypeDef* htim;
-  LRA_TIM_CH ch;
+  LRA_TIM_Ch_t ch;
 } LRA_PWM_t;
 
 /* public functions */
