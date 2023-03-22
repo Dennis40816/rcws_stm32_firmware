@@ -50,11 +50,62 @@ typedef enum {
   LRA_USB_DATA_MODE = 0x01,
 } LRA_USB_Mode_t;
 
+typedef enum {
+  LRA_USB_PARSE_OK = 0x0,
+  LRA_USB_PARSE_UNKNOWN = 0x01,
+  LRA_USB_PARSE_RX_UNSET = 0x02,
+  LRA_USB_PARSE_NULLERR = 0x03,
+  LRA_USB_PARSE_LEN0 = 0x04,      // LRA_USB_Msg_t->pdata_len == 0
+  LRA_USB_PARSE_EOFERR = 0x05,
+  LRA_USB_PARSE_LEN_MISSMATCH = 0x06,
+} LRA_USB_Parse_Result_t;
+
+typedef enum {
+  LRA_USB_RX_UNSET, 
+  LRA_USB_RX_SET
+} LRA_USB_Rx_Flag_t;
+
+typedef enum {
+  LRA_USB_CMD_INIT = 0x00,
+  LRA_USB_CMD_UPDATE_PWM = 0x01,
+  LRA_USB_CMD_UPDATE_REG = 0x02,  // TODO: 更新哪一個的 register 放在 data 裡面好了
+} LRA_USB_Cmd_t;
+
+// DL for data len
+// FIXME: Need to fix this
+typedef enum {
+  LRA_USB_OUT_INIT_DL = 0x00,
+  LRA_USB_OUT_UPDATE_PWM_DL = 0x01,
+} LRA_USB_Out_DL_t;
+
+typedef enum {
+  LRA_USB_IN_INIT_DL = 0x00,
+  LRA_USB_IN_UPDATE_PWM_DL = 0x01,
+} LRA_USB_In_DL_t;
+
+/* structs */
+
+/**
+ * @brief The msg contrains 1 byte cmd_type, 2 bytes length information
+ *        and pdata pointer.
+ * @param cmd_type Defined in enum LRA_USB_Cmd_t
+ * @param pdata_len The length of pdata
+ * @param pdata Where to start parsing data
+ */
+typedef struct {
+  volatile uint8_t  cmd_type;
+  volatile uint16_t pdata_len;  // (H << 1) | L
+  volatile uint8_t* pdata;
+} LRA_USB_Msg_t ;
+
 /* public functions */
 
 HAL_StatusTypeDef LRA_USB_Init();
 HAL_StatusTypeDef LRA_Modify_USB_Mode(LRA_USB_Mode_t mode);
 LRA_USB_Mode_t LRA_Get_USB_Mode(void);
 void LRA_USB_Print(const char* format, ...);
+void LRA_USB_Buffer_Copy(uint8_t* pdes, uint8_t* psrc, uint16_t len);
+LRA_USB_Parse_Result_t LRA_USB_Do_Parse();
+
 
 #endif /* INC_RASP_CMD_H_ */

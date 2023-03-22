@@ -130,7 +130,7 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-static int8_t CDC_Pharser(uint8_t lra_usb_cmd, uint8_t target, uint16_t len);
+
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -330,13 +330,7 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-static int8_t CDC_Pharser(uint8_t lra_usb_cmd, uint8_t target, uint16_t len) {
 
-  #ifdef LRA_DEBUG
-
-  #endif
-  return HAL_OK;
-}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
