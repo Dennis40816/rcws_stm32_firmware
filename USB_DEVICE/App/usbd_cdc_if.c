@@ -270,7 +270,10 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
 
-  CDC_Pharser(Buf[0], 0, 1);
+  // copy data to available buffer
+  LRA_USB_Buffer_Copy(lra_usb_rx_user_buf, Buf, Len);
+
+  // an example for dual array CDC: http://news.eeworld.com.cn/mcu/article_2016122032494.html
 
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
