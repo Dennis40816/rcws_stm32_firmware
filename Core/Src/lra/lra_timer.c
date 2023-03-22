@@ -9,6 +9,10 @@
 
 #include "lra/lra_timer.h"
 
+/* extern variables definitions */
+
+unsigned long long lra_timer_usec_counter = 0;
+
 
 
 

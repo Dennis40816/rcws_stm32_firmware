@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lra/lra_LED.h"
+#include "lra/lra_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -267,6 +268,8 @@ void TIM6_IRQHandler(void)
     default:
       break;
   }
+
+  // TODO: lra timer increase 1
   
   /* USER CODE END TIM6_IRQn 1 */
 }

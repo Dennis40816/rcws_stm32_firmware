@@ -10,8 +10,14 @@
 
 /* includes */
 
+#include "lra/lra_user_config.h"
+
+/* extern variables */
+
+// TODO: timer ref: https://blog.csdn.net/Henjay724/article/details/117763580
+
+extern unsigned long long lra_timer_usec_counter;
 
 /* public functions */
-
 
 #endif /* INC_LRA_LRA_TIMER_H_ */
