@@ -10,15 +10,14 @@
 // contrains user config header, should be the top of include files
 #include "lra/lra_main.h"
 
+// get some pins' macros
 #include "main.h"
 
 // includes device related headers
 #include "lra/lra_spi_devices.h"
 #include "lra/lra_i2c_devices.h"
-
-#include "lra/lra_error.h"
+#include "lra/lra_sys_error.h"
 #include "lra/lra_usb.h"
-
 #include "lra/lra_pwm.h"
 
 // from main.c
@@ -111,16 +110,46 @@ void LRA_Main_EnterPoint(void) {
       .temp_intercept_Celsius = 0.0,
   };
 
-  #ifdef LRA_SYSTEM_INFO
-  while (!LRA_USB_DTR_flag) {
+  /* Buffer Init */
+  // TODO: 移動至 usb 和 acc 中
+  uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
+  uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
+
+  uint8_t lra_acc_buf1[LRA_ACC_BUFFER_SIZE] = {0};
+  uint8_t lra_acc_buf2[LRA_ACC_BUFFER_SIZE] = {0};
+
+  lra_usb_tx_dbuf = (LRA_DualBuf_t){
+      .buf_full = {0, 0},
+      .buf_index = {0, 0},
+      .buf_size = {LRA_USB_BUFFER_SIZE, LRA_USB_BUFFER_SIZE},
+      .cur_buf = 0,
+      .dbuf = {lra_usb_tx_buf1, lra_usb_tx_buf2},
+  };
+
+  lra_acc_dbuf = (LRA_DualBuf_t){
+      .buf_full = {0, 0},
+      .buf_index = {0, 0},
+      .buf_size = {LRA_ACC_BUFFER_SIZE, LRA_ACC_BUFFER_SIZE},
+      .cur_buf = 0,
+      .dbuf = {lra_acc_buf1, lra_acc_buf2},
+  };
+
+#ifdef LRA_SYSTEM_INFO
+  while (!lra_usb_dtr_flag) {
     /**
-     * This code block will block while waiting for the USB COM port to open. 
-     * The blocking behavior is only enabled when LRA_SYSTEM_INFO is defined. 
-     * If LRA_SYSTEM_INFO is defined, LRA_I2C_Devs_Init will send a series of USB strings, which 
-     * could result in message omission if the host USB COM port is not open before transmitting.
+     * This code block will block while waiting for the USB COM port to open.
+     * The blocking behavior is only enabled when LRA_SYSTEM_INFO is defined.
+     * If LRA_SYSTEM_INFO is defined, LRA_I2C_Devs_Init will send a series of
+     * USB strings, which could result in message omission if the host USB COM
+     * port is not open before transmitting.
      */
   }
-  #endif
+#endif
+
+  /* USB Init */
+  ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
+  if (ret != HAL_OK)
+    error |= (1 << LRA_INIT_ERR_USB);
 
   /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
@@ -144,38 +173,8 @@ void LRA_Main_EnterPoint(void) {
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_ADXL355);
 
-  /* USB Init */
-  ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
-  if (ret != HAL_OK)
-    error |= (1 << LRA_INIT_ERR_USB);
-
-  /* Buffer Init */
-  uint8_t LRA_USB_Rx_buf[LRA_USB_BUFFER_SIZE] = {0};
-
-  uint8_t LRA_USB_Tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
-  uint8_t LRA_USB_Tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
-
-  uint8_t LRA_ACC_buf1[LRA_ACC_BUFFER_SIZE] = {0};
-  uint8_t LRA_ACC_buf2[LRA_ACC_BUFFER_SIZE] = {0};
-
-  LRA_DualBuf_t LRA_USB_Tx_dbuf = {
-      .buf_full = {0, 0},
-      .buf_index = {0, 0},
-      .buf_size = {LRA_USB_BUFFER_SIZE, LRA_USB_BUFFER_SIZE},
-      .cur_buf = 0,
-      .dbuf = {LRA_USB_Tx_buf1, LRA_USB_Tx_buf2},
-  };
-
-  LRA_DualBuf_t LRA_ACC_dbuf = {
-      .buf_full = {0, 0},
-      .buf_index = {0, 0},
-      .buf_size = {LRA_ACC_BUFFER_SIZE, LRA_ACC_BUFFER_SIZE},
-      .cur_buf = 0,
-      .dbuf = {LRA_ACC_buf1, LRA_ACC_buf2},
-  };
-
   // you should check error code here
-  if(error)
+  if (error)
     LRA_USB_Print("Init error code: %x", error);
   else
     LRA_USB_Print("Init success\r\n");

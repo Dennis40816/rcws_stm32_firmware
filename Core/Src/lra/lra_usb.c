@@ -12,15 +12,15 @@
 
 #include "lra/lra_usb.h"
 
-// use CDC_Transmit_FS
+// for CDC_Transmit_FS
 #include "usbd_cdc_if.h"
 
 /* extern variables definitions */
 
 uint8_t lra_usb_dtr_flag;
-uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE];
-uint8_t lra_usb_tx_buf[LRA_USB_BUFFER_SIZE];
-uint8_t lra_usb_rx_user_buf[LRA_USB_BUFFER_SIZE];
+uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE] = {0};
+uint8_t lra_usb_tx_buf[LRA_USB_BUFFER_SIZE] = {0};
+uint8_t lra_usb_rx_user_buf[LRA_USB_BUFFER_SIZE] = {0};
 
 // fucture usage
 LRA_DualBuf_t lra_usb_tx_dbuf;
@@ -34,16 +34,10 @@ static uint8_t lra_usb_rx_flag = LRA_USB_RX_UNSET;
 /* public functions */
 
 /**
- * @brief 由 lra_main.c 呼叫，初始化 lra usb 相關設定
+ * @brief 由 lra_main.c 呼叫，將 USB 模式設定成 LRA_USB_CTRL_MODE
  *
  */
-HAL_StatusTypeDef LRA_USB_Init(uint8_t config) {
-  // TODO
-  switch (config) {
-    default:
-      break;
-  }
-
+HAL_StatusTypeDef LRA_USB_Init() {
   return LRA_Modify_USB_Mode(LRA_USB_CRTL_MODE);
 }
 
@@ -53,7 +47,17 @@ HAL_StatusTypeDef LRA_USB_Init(uint8_t config) {
  * @param mode lra usb 的 mode，定義在 lra_usb.h 中
  */
 HAL_StatusTypeDef LRA_Modify_USB_Mode(LRA_USB_Mode_t mode) {
-  // TODO: safe check for mode
+  if (lra_usb_mode == mode)
+    return HAL_OK;
+
+// TODO: safe check for mode
+  switch (lra_usb_mode) {
+    case LRA_USB_NONE_MODE:
+      break;
+
+    default:
+      break;
+  }
 
   lra_usb_mode = mode;
   return HAL_OK;

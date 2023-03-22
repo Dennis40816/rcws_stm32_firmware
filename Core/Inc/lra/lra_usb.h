@@ -52,7 +52,7 @@ typedef enum {
 
 /* public functions */
 
-HAL_StatusTypeDef LRA_USB_Init(uint8_t config);
+HAL_StatusTypeDef LRA_USB_Init();
 HAL_StatusTypeDef LRA_Modify_USB_Mode(LRA_USB_Mode_t mode);
 LRA_USB_Mode_t LRA_Get_USB_Mode(void);
 void LRA_USB_Print(const char* format, ...);
