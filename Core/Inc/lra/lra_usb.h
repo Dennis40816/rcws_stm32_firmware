@@ -58,7 +58,7 @@ typedef enum {
   LRA_USB_PARSE_LEN0 = 0x04,      // LRA_USB_Msg_t->pdata_len == 0
   LRA_USB_PARSE_EOFERR = 0x05,
   LRA_USB_PARSE_LEN_MISSMATCH = 0x06,
-} LRA_USB_Parse_Result_t;
+} LRA_USB_Parse_Check_t;
 
 typedef enum {
   LRA_USB_RX_UNSET, 
@@ -105,7 +105,10 @@ HAL_StatusTypeDef LRA_Modify_USB_Mode(LRA_USB_Mode_t mode);
 LRA_USB_Mode_t LRA_Get_USB_Mode(void);
 void LRA_USB_Print(const char* format, ...);
 void LRA_USB_Buffer_Copy(uint8_t* pdes, uint8_t* psrc, uint16_t len);
-LRA_USB_Parse_Result_t LRA_USB_Do_Parse();
+LRA_USB_Parse_Check_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg);
+
+/* inline */
+uint8_t LRA_USB_Get_Rx_Flag();
 
 
 #endif /* INC_RASP_CMD_H_ */

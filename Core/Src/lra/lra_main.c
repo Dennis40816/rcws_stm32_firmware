@@ -14,11 +14,11 @@
 #include "main.h"
 
 // includes device related headers
-#include "lra/lra_spi_devices.h"
 #include "lra/lra_i2c_devices.h"
+#include "lra/lra_pwm.h"
+#include "lra/lra_spi_devices.h"
 #include "lra/lra_sys_error.h"
 #include "lra/lra_usb.h"
-#include "lra/lra_pwm.h"
 
 // from main.c
 extern I2C_HandleTypeDef hi2c1;
@@ -31,6 +31,10 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim8;
+
+/* private function declarations */
+
+static LRA_USB_Parse_Check_t LRA_USB_Main_Parser();
 
 /* public functions */
 
@@ -247,4 +251,51 @@ HAL_StatusTypeDef LRA_Main_System_Init(void) {
   // System interrupt related
   HAL_TIM_Base_Start_IT(&htim6);
   return HAL_OK;
+}
+
+/* private functions */
+
+static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
+  // TODO: get correct buffer if using dual buffers
+  const uint8_t* pbuf = lra_usb_rx_user_buf;
+
+  if (LRA_USB_Get_Rx_Flag() == LRA_USB_RX_UNSET)
+    return LRA_USB_PARSE_RX_UNSET;
+
+  if (pbuf == NULL)
+    return LRA_USB_PARSE_NULLERR;
+
+  const volatile uint8_t pdata_len_H = *(pbuf + 1);
+  const volatile uint8_t pdata_len_L = *(pbuf + 2);
+
+  // XXX: assume first three bytes are always correct (cmd_type and pdata_len
+  // are both valid)
+  LRA_USB_Msg_t pmsg = {.cmd_type = *pbuf,
+                        .pdata_len = pdata_len_H << 1 | pdata_len_L,
+                        .pdata = pbuf + 3};
+
+  // LRA_USB_Parse_Precheck() will unset lra_usb_rx_flag no matter the precheck
+  // pass or not, so call it before you parse the data
+  LRA_USB_Parse_Check_t ret = LRA_USB_Parse_Precheck(&pmsg);
+
+  if (ret != LRA_USB_PARSE_OK)
+    return ret;
+
+  /* start to parse pdata */
+  const uint8_t* cursor = pmsg.pdata;
+  switch (pmsg.cmd_type) {
+    case LRA_USB_CMD_INIT:
+      break;
+
+    case LRA_USB_CMD_UPDATE_PWM:
+      break;
+
+    case LRA_USB_CMD_UPDATE_REG:
+      break;
+
+    default:
+      return LRA_USB_PARSE_UNKNOWN;
+  }
+
+  return LRA_USB_PARSE_OK;
 }
