@@ -39,7 +39,7 @@ static volatile uint8_t lra_usb_rx_flag = LRA_USB_RX_UNSET;
  *
  */
 HAL_StatusTypeDef LRA_USB_Init() {
-  return LRA_Modify_USB_Mode(LRA_USB_CRTL_MODE);
+  return LRA_Modify_USB_Mode(LRA_USB_NONE_MODE);
 }
 
 /**
