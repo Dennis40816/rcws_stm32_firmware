@@ -257,7 +257,7 @@ HAL_StatusTypeDef LRA_Main_System_Init(void) {
 
 static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
   // TODO: get correct buffer if using dual buffers
-  const uint8_t* pbuf = lra_usb_rx_user_buf;
+  uint8_t* const pbuf = lra_usb_rx_user_buf;
 
   if (LRA_USB_Get_Rx_Flag() == LRA_USB_RX_UNSET)
     return LRA_USB_PARSE_RX_UNSET;
@@ -282,7 +282,7 @@ static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
     return ret;
 
   /* start to parse pdata */
-  const uint8_t* cursor = pmsg.pdata;
+  volatile uint8_t* const cursor = pmsg.pdata;
   switch (pmsg.cmd_type) {
     case LRA_USB_CMD_INIT:
       break;

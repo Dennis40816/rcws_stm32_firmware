@@ -121,10 +121,10 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
     // uint32_t new_CCR = (div10_remain)
     //                        ? (ARR_cache + 1) / 1000.0 * duty_permil
     //                        : (ARR_cache + 1) / 100.0 * duty_permil / 10;
-    uint16_t new_CCR = (ARR_cache + 1) / 1000.0 * duty_permil;
+  uint16_t new_CCR = (ARR_cache + 1) / 1000.0 * duty_permil;
 
     /* update to hardware register CCR */
-    __HAL_TIM_SET_COMPARE(handle->htim, handle->ch, new_CCR);
+  __HAL_TIM_SET_COMPARE(handle->htim, handle->ch, new_CCR);
 
-    return HAL_OK;
-  }
+  return HAL_OK;
+}
