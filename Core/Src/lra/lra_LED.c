@@ -12,7 +12,7 @@
 
 /* public variables */
 
-LEDStates_t led_state = LRA_LED_DOWN;
+LRA_LEDStates_t led_state = LRA_LED_DOWN;
 
 /* public functions */
 
