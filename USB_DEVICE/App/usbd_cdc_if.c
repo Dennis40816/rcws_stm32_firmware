@@ -235,7 +235,14 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
         // DTR set
         // This flag is declared in "lra/lra_usb.h" and is defined
         // in "lra/lra_main.c"
-        lra_usb_dtr_flag = !lra_usb_dtr_flag;
+        lra_usb_dtr_flag = 1;
+
+        // change LRA_USB_mode
+        if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE)
+          LRA_Modify_USB_Mode(LRA_USB_WAIT_FOR_INIT_MODE);
+      } else {
+        lra_usb_dtr_flag = 0;
+        LRA_Modify_USB_Mode(LRA_USB_NONE_MODE);
       }
       break;
     }
