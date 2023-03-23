@@ -8,6 +8,10 @@
 #ifndef INC_RASP_CMD_H_
 #define INC_RASP_CMD_H_
 
+/* defines */
+
+#define USB_CDC_DTR_SET (0x01)
+
 /* includes */
 
 #include "stm32f4xx_hal.h"

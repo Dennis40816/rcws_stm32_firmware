@@ -231,7 +231,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
     case CDC_SET_CONTROL_LINE_STATE: {
       USBD_SetupReqTypedef * req = (USBD_SetupReqTypedef *)pbuf;
-      if(req->wValue & 0x0001 != 0) {
+      if(req->wValue & USB_CDC_DTR_SET) {
         // DTR set
         // This flag is declared in "lra/lra_usb.h" and is defined
         // in "lra/lra_main.c"
