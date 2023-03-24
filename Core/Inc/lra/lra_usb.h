@@ -72,6 +72,11 @@ typedef enum {
 } LRA_USB_Rx_Flag_t;
 
 typedef enum {
+  LRA_USB_DTR_UNSET, 
+  LRA_USB_DTR_SET
+} LRA_USB_DTR_Flag_t;
+
+typedef enum {
   LRA_USB_CMD_INIT = 0x00,
   LRA_USB_CMD_UPDATE_PWM = 0x01,
   LRA_USB_CMD_UPDATE_REG = 0x02,  // TODO: 更新哪一個的 register 放在 data 裡面好了

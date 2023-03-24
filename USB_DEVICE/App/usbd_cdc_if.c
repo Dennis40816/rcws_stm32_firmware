@@ -231,18 +231,15 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
     case CDC_SET_CONTROL_LINE_STATE: {
       USBD_SetupReqTypedef * req = (USBD_SetupReqTypedef *)pbuf;
+      
       if(req->wValue & USB_CDC_DTR_SET) {
-        // DTR set
-        // This flag is declared in "lra/lra_usb.h" and is defined
-        // in "lra/lra_main.c"
-        lra_usb_dtr_flag = 1;
-
         // change LRA_USB_mode
         if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE)
           LRA_Modify_USB_Mode(LRA_USB_WAIT_FOR_INIT_MODE);
+        lra_usb_dtr_flag = LRA_USB_DTR_SET;
       } else {
-        lra_usb_dtr_flag = 0;
         LRA_Modify_USB_Mode(LRA_USB_NONE_MODE);
+        lra_usb_dtr_flag = LRA_USB_DTR_UNSET;
       }
       break;
     }
@@ -278,7 +275,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
 
   // copy data to available buffer
-  LRA_USB_Buffer_Copy(lra_usb_rx_user_buf, Buf, Len);
+  LRA_USB_Buffer_Copy(lra_usb_rx_user_buf, Buf, *Len);
 
   // an example for dual array CDC: http://news.eeworld.com.cn/mcu/article_2016122032494.html
 
