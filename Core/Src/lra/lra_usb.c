@@ -114,26 +114,33 @@ void LRA_USB_Buffer_Copy(uint8_t* pdest, uint8_t* psrc, uint16_t len) {
 /**
  * @brief Precheck the data going to parse are valid
  *
- * @return LRA_USB_Parse_Check_t
+ * @return LRA_USB_Parse_Precheck_t
  */
-LRA_USB_Parse_Check_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg) {
+LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
+                                             uint8_t* const pbuf) {
+  if (LRA_USB_Get_Rx_Flag() == LRA_USB_RX_UNSET)
+    return LRA_USB_PARSE_PRECHECK_RX_UNSET;
+
+  if (pbuf == NULL || pmsg == NULL)
+    return LRA_USB_PARSE_PRECHECK_NULLERR;
+
   // unset rx_flag
   lra_usb_rx_flag = LRA_USB_RX_UNSET;
 
   // pdata_len is 0
   if (pmsg->pdata_len == 0)
-    return LRA_USB_PARSE_LEN0;
+    return LRA_USB_PARSE_PRECHECK_LEN0;
 
   // check pmsg->pdata end of "\r\n"
   if ('\r' != *(pmsg->pdata + (pmsg->pdata_len - 2)) ||
       '\n' != *(pmsg->pdata + (pmsg->pdata_len - 1)))
-    return LRA_USB_PARSE_EOFERR;
+    return LRA_USB_PARSE_PRECHECK_EOFERR;
 
   // TODO: pdata_len check
   switch (pmsg->cmd_type) {
     case LRA_USB_CMD_INIT:
       if (pmsg->pdata_len != LRA_USB_OUT_INIT_DL)
-        return LRA_USB_PARSE_LEN_MISSMATCH;
+        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
       break;
     case LRA_USB_CMD_UPDATE_PWM:
       if (pmsg->pdata_len != LRA_USB_OUT_UPDATE_PWM_DL)
@@ -142,9 +149,12 @@ LRA_USB_Parse_Check_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg) {
 
     default:
       break;
+
+    default:
+      return LRA_USB_PARSE_PRECHECK_UNKNOWN;
   }
 
-  return LRA_USB_PARSE_OK;
+  return LRA_USB_PARSE_PRECHECK_OK;
 }
 
 /**

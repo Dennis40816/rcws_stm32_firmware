@@ -34,7 +34,7 @@ extern TIM_HandleTypeDef htim8;
 
 /* private function declarations */
 
-static LRA_USB_Parse_Check_t LRA_USB_Main_Parser();
+static LRA_USB_Parse_Result_t LRA_USB_Main_Parser();
 
 /* public functions */
 
@@ -255,7 +255,7 @@ HAL_StatusTypeDef LRA_Main_System_Init(void) {
 
 /* private functions */
 
-static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
+static LRA_USB_Parse_Result_t LRA_USB_Main_Parser() {
   // TODO: get correct buffer if using dual buffers
   uint8_t* const pbuf = lra_usb_rx_user_buf;
 
@@ -276,10 +276,10 @@ static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
 
   // LRA_USB_Parse_Precheck() will unset lra_usb_rx_flag no matter the precheck
   // pass or not, so call it before you parse the data
-  LRA_USB_Parse_Check_t ret = LRA_USB_Parse_Precheck(&pmsg);
+  LRA_USB_Parse_Precheck_t ret = LRA_USB_Parse_Precheck(&pmsg, pbuf);
 
-  if (ret != LRA_USB_PARSE_OK)
-    return ret;
+  if (ret != LRA_USB_PARSE_PRECHECK_OK)
+    return LRA_USB_PARSE_FAIL_IN_PRECHECK;
 
   /* start to parse pdata */
   volatile uint8_t* const cursor = pmsg.pdata;
@@ -294,8 +294,6 @@ static LRA_USB_Parse_Check_t LRA_USB_Main_Parser() {
       break;
 
     default:
-      return LRA_USB_PARSE_UNKNOWN;
+      return LRA_USB_PARSE_PRECHECK_UNKNOWN;
   }
-
-  return LRA_USB_PARSE_OK;
 }
