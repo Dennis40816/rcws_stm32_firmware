@@ -20,7 +20,12 @@
 #include "lra/lra_sys_error.h"
 #include "lra/lra_usb.h"
 
-// from main.c
+// includes parser string operation related headers
+#include "string.h"
+#include "usbd_cdc_if.h"
+
+/* extern */
+
 extern I2C_HandleTypeDef hi2c1;
 
 extern SPI_HandleTypeDef hspi2;
@@ -259,20 +264,7 @@ static LRA_USB_Parse_Result_t LRA_USB_Main_Parser() {
   // TODO: get correct buffer if using dual buffers
   uint8_t* const pbuf = lra_usb_rx_user_buf;
 
-  if (LRA_USB_Get_Rx_Flag() == LRA_USB_RX_UNSET)
-    return LRA_USB_PARSE_RX_UNSET;
-
-  if (pbuf == NULL)
-    return LRA_USB_PARSE_NULLERR;
-
-  const volatile uint8_t pdata_len_H = *(pbuf + 1);
-  const volatile uint8_t pdata_len_L = *(pbuf + 2);
-
-  // XXX: assume first three bytes are always correct (cmd_type and pdata_len
-  // are both valid)
-  LRA_USB_Msg_t pmsg = {.cmd_type = *pbuf,
-                        .pdata_len = pdata_len_H << 1 | pdata_len_L,
-                        .pdata = pbuf + 3};
+  LRA_USB_Msg_t pmsg;
 
   // LRA_USB_Parse_Precheck() will unset lra_usb_rx_flag no matter the precheck
   // pass or not, so call it before you parse the data
@@ -285,12 +277,49 @@ static LRA_USB_Parse_Result_t LRA_USB_Main_Parser() {
   volatile uint8_t* const cursor = pmsg.pdata;
   switch (pmsg.cmd_type) {
     case LRA_USB_CMD_INIT:
-      break;
+      /* if pdata is verification stirng */
+      if (strncmp(pmsg.pdata, LRA_USB_OUT_INIT_STR, pmsg.pdata_len) == 0) {
+        // TODO: check the status
+        uint8_t usb_state =
+            CDC_Transmit_FS((uint8_t*)LRA_USB_IN_INIT_STR, LRA_USB_IN_INIT_DL);
+        // change STM32 state
+        LRA_Modify_USB_Mode(LRA_USB_CRTL_MODE);
+      } else {
+        return LRA_USB_PARSE_FAIL_IN_DATA;
+      }
+      return LRA_USB_PARSE_INIT_OK;
 
     case LRA_USB_CMD_UPDATE_PWM:
       break;
 
     case LRA_USB_CMD_UPDATE_REG:
+      break;
+
+    case LRA_USB_CMD_RESET_REG:
+      break;
+
+    case LRA_USB_CMD_RESET_STM32:
+      if (strncmp(pmsg.pdata, LRA_USB_OUT_RESET_STM32_STR, pmsg.pdata_len) ==
+          0) {
+        if (LRA_Get_USB_Mode() == LRA_USB_CRTL_MODE) {
+          uint8_t usb_state = USBD_BUSY;
+          while (usb_state == USBD_BUSY) {
+            usb_state = CDC_Transmit_FS((uint8_t*)LRA_USB_IN_RESET_STM32_STR,
+                                        LRA_USB_IN_RESET_STM32_DL);
+          }
+
+          HAL_Delay(1000);
+
+          // reset stm32
+          NVIC_SystemReset();
+        } else {  // TODO: make it more flexible
+          const char* invalid_operation =
+              "LRA USB IN Reset STM32 failed: Not in CRTL Mode\r\n";
+
+          CDC_Transmit_FS((uint8_t*)invalid_operation, 50);
+        }
+      }
+
       break;
 
     default:

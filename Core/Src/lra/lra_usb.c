@@ -127,6 +127,16 @@ LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
   // unset rx_flag
   lra_usb_rx_flag = LRA_USB_RX_UNSET;
 
+  // assign to pmsg
+  const volatile uint8_t pdata_len_H = *(pbuf + 1);
+  const volatile uint8_t pdata_len_L = *(pbuf + 2);
+
+  // XXX: assume first three bytes are always correct (cmd_type and pdata_len
+  // are both valid)
+  *pmsg = (LRA_USB_Msg_t){.cmd_type = *pbuf,
+                          .pdata_len = pdata_len_H << 1 | pdata_len_L,
+                          .pdata = pbuf + 3};
+
   // pdata_len is 0
   if (pmsg->pdata_len == 0)
     return LRA_USB_PARSE_PRECHECK_LEN0;
@@ -136,18 +146,29 @@ LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
       '\n' != *(pmsg->pdata + (pmsg->pdata_len - 1)))
     return LRA_USB_PARSE_PRECHECK_EOFERR;
 
-  // TODO: pdata_len check
+  // pdata_len check and cmd_type check
   switch (pmsg->cmd_type) {
+    /* constant len region */
     case LRA_USB_CMD_INIT:
       if (pmsg->pdata_len != LRA_USB_OUT_INIT_DL)
         return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
       break;
     case LRA_USB_CMD_UPDATE_PWM:
       if (pmsg->pdata_len != LRA_USB_OUT_UPDATE_PWM_DL)
-        return LRA_USB_PARSE_LEN_MISSMATCH;
+        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
+      break;
+    case LRA_USB_CMD_RESET_REG:
+      if (pmsg->pdata_len != LRA_USB_OUT_RESET_REG_DL)
+        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
+      break;
+    case LRA_USB_CMD_RESET_STM32:
+      if (pmsg->pdata_len != LRA_USB_OUT_RESET_STM32_DL)
+        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
       break;
 
-    default:
+    /* pdata_len not constant region */
+    case LRA_USB_CMD_UPDATE_REG:
+      // case LRA_SOMETHING_ELSE:
       break;
 
     default:
