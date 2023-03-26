@@ -143,22 +143,21 @@ void LRA_Main_EnterPoint(void) {
       .dbuf = {lra_acc_buf1, lra_acc_buf2},
   };
 
-#ifdef LRA_SYSTEM_INFO
-  while (!lra_usb_dtr_flag) {
-    /**
-     * This code block will block while waiting for the USB COM port to open.
-     * The blocking behavior is only enabled when LRA_SYSTEM_INFO is defined.
-     * If LRA_SYSTEM_INFO is defined, LRA_I2C_Devs_Init will send a series of
-     * USB strings, which could result in message omission if the host USB COM
-     * port is not open before transmitting.
-     */
-  }
-#endif
-
   /* USB Init */
   ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_USB);
+
+  while (LRA_Get_USB_Mode() != LRA_USB_CRTL_MODE) {
+    /**
+     * @brief Wait for host send LRA_USB_CMD_Init msg, this will make USB state
+     * becomes LRA_USB_WAIT_FOR_INIT_MODE (changes made in usbd_cdc_if.c when
+     * receive DTR signal). Keep going if receive correct init cmd.
+     *
+     */
+    if (LRA_USB_Main_Parser() == LRA_USB_PARSE_INIT_OK)
+      break;
+  }
 
   /* I2C devs init */
   ret = LRA_I2C_Devs_Init(&i2c_devs);
@@ -220,11 +219,17 @@ void LRA_Main_EnterPoint(void) {
   // Flash *2: init end
   LRA_LED_Flash_N(2, 500);
 
-  // Test code
+// Test code
+#ifdef LRA_TEST
+  LRA_USB_Print("Test started\r\n");
+
+  LRA_USB_Print("Read \r\n");
+
+#endif
 
   while (1) {
     /* Loop update */
-
+    LRA_USB_Main_Parser();
     /* usb parser */
 
     // usb receive flag & parser
