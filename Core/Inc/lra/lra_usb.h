@@ -84,22 +84,36 @@ typedef enum {
   LRA_USB_DTR_SET
 } LRA_USB_DTR_Flag_t;
 
+/**
+ * @brief it's a uint8_t number
+ * 
+ * @warning update LRA_USB_Parse_Precheck() and LRA_USB_Main_Parser() once you add a new cmd
+ * 
+ */
 typedef enum {
   LRA_USB_CMD_INIT = 0x00,
   LRA_USB_CMD_UPDATE_PWM = 0x01,
   LRA_USB_CMD_UPDATE_REG = 0x02,  // TODO: 更新哪一個的 register 放在 data 裡面好了
+  LRA_USB_CMD_RESET_REG = 0x03,
+  LRA_USB_CMD_RESET_STM32 = 0x04,
 } LRA_USB_Cmd_t;
 
 // DL for data len
 // FIXME: Need to fix this
 typedef enum {
-  LRA_USB_OUT_INIT_DL = 0x00,
+  LRA_USB_OUT_INIT_DL = sizeof(LRA_USB_OUT_INIT_STR) - 1,
   LRA_USB_OUT_UPDATE_PWM_DL = 0x01,
+  LRA_USB_OUT_UPDATE_REG_DL = 0x01,
+  LRA_USB_OUT_RESET_REG_DL = 0x01,
+  LRA_USB_OUT_RESET_STM32_DL = sizeof(LRA_USB_OUT_RESET_STM32_STR) - 1,
 } LRA_USB_Out_DL_t;
 
 typedef enum {
-  LRA_USB_IN_INIT_DL = 0x00,
+  LRA_USB_IN_INIT_DL = sizeof(LRA_USB_IN_INIT_STR) - 1,
   LRA_USB_IN_UPDATE_PWM_DL = 0x01,
+  LRA_USB_IN_UPDATE_REG_DL = 0x01,
+  LRA_USB_IN_RESET_REG_DL = 0x01,
+  LRA_USB_IN_RESET_STM32_DL = sizeof(LRA_USB_IN_RESET_STM32_STR) - 1,  // no return 
 } LRA_USB_In_DL_t;
 
 /* structs */
