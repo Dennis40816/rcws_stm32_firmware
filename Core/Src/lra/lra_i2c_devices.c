@@ -8,7 +8,7 @@
 /* includes */
 
 #include "lra/lra_i2c_devices.h"
- 
+
 #include "lra/lra_usb.h"
 
 /* public functions */
@@ -25,7 +25,6 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     return HAL_ERROR;
 
   for (uint8_t i = 0; i < pDevs->pair_count; ++i) {
-
     TCA_DRV_Pair_t* pPair = pDevs->pDevPair[i];
 
     // switch to correct channel first
@@ -38,10 +37,12 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     // id validate
     int8_t device_verify = DRV2605L_ID_Validate(pPair->pDrv);
 
-    if ( device_verify != HAL_OK)
+    if (device_verify != HAL_OK)
       continue;
 
-    LRA_USB_Print("LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n", i);
+    LRA_USB_Print(
+        "LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n",
+        i);
 
     ret = DRV2605L_WriteReg(pPair->pDrv, DRV2605L_Mode, 0x07);
 
@@ -60,14 +61,13 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     if (ret != HAL_OK)
       return ret;
 
-    // check everything is ok. Depending on LRA_main.h
-    #ifdef LRA_DEBUG 
+// check everything is ok. Depending on LRA_main.h
+#ifdef LRA_DEBUG
     uint8_t test[DRV2605L_Total_Reg_Num] = {0};
     ret = DRV2605L_Read_All(pPair->pDrv, test);
     if (ret != HAL_OK)
       return ret;
-    #endif
-
+#endif
   }
 
   return HAL_OK;

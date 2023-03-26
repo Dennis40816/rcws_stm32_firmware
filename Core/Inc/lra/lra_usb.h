@@ -61,7 +61,7 @@ typedef enum {
   LRA_USB_PARSE_PRECHECK_UNKNOWN = 0x01,
   LRA_USB_PARSE_PRECHECK_RX_UNSET = 0x02,
   LRA_USB_PARSE_PRECHECK_NULLERR = 0x03,
-  LRA_USB_PARSE_PRECHECK_LEN0 = 0x04,      // LRA_USB_Msg_t->pdata_len == 0
+  LRA_USB_PARSE_PRECHECK_LEN0 = 0x04,  // LRA_USB_Msg_t->pdata_len == 0
   LRA_USB_PARSE_PRECHECK_EOFERR = 0x05,
   LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH = 0x06,
 } LRA_USB_Parse_Precheck_t;
@@ -74,26 +74,20 @@ typedef enum {
   LRA_USB_PARSE_UPDATE_REG_OK = 0x03,
 } LRA_USB_Parse_Result_t;
 
-typedef enum {
-  LRA_USB_RX_UNSET, 
-  LRA_USB_RX_SET
-} LRA_USB_Rx_Flag_t;
-
-typedef enum {
-  LRA_USB_DTR_UNSET, 
-  LRA_USB_DTR_SET
-} LRA_USB_DTR_Flag_t;
+typedef enum { LRA_FLAG_UNSET, LRA_FLAG_SET } LRA_Flag_t;
 
 /**
  * @brief it's a uint8_t number
- * 
- * @warning update LRA_USB_Parse_Precheck() and LRA_USB_Main_Parser() once you add a new cmd
- * 
+ *
+ * @warning update LRA_USB_Parse_Precheck() and LRA_USB_Main_Parser() once you
+ * add a new cmd
+ *
  */
 typedef enum {
   LRA_USB_CMD_INIT = 0x00,
   LRA_USB_CMD_UPDATE_PWM = 0x01,
-  LRA_USB_CMD_UPDATE_REG = 0x02,  // TODO: 更新哪一個的 register 放在 data 裡面好了
+  LRA_USB_CMD_UPDATE_REG =
+      0x02,  // TODO: 更新哪一個的 register 放在 data 裡面好了
   LRA_USB_CMD_RESET_REG = 0x03,
   LRA_USB_CMD_RESET_STM32 = 0x04,
 } LRA_USB_Cmd_t;
@@ -113,7 +107,8 @@ typedef enum {
   LRA_USB_IN_UPDATE_PWM_DL = 0x01,
   LRA_USB_IN_UPDATE_REG_DL = 0x01,
   LRA_USB_IN_RESET_REG_DL = 0x01,
-  LRA_USB_IN_RESET_STM32_DL = sizeof(LRA_USB_IN_RESET_STM32_STR) - 1,  // no return 
+  LRA_USB_IN_RESET_STM32_DL =
+      sizeof(LRA_USB_IN_RESET_STM32_STR) - 1,  // no return
 } LRA_USB_In_DL_t;
 
 /* structs */
@@ -126,10 +121,10 @@ typedef enum {
  * @param pdata Where to start parsing data
  */
 typedef struct {
-  volatile uint8_t  cmd_type;
+  volatile uint8_t cmd_type;
   volatile uint16_t pdata_len;  // (H << 1) | L
   volatile uint8_t* pdata;
-} LRA_USB_Msg_t ;
+} LRA_USB_Msg_t;
 
 /* public functions */
 
@@ -138,9 +133,8 @@ HAL_StatusTypeDef LRA_Modify_USB_Mode(LRA_USB_Mode_t mode);
 LRA_USB_Mode_t LRA_Get_USB_Mode(void);
 void LRA_USB_Print(const char* format, ...);
 void LRA_USB_Buffer_Copy(uint8_t* pdes, uint8_t* psrc, uint16_t len);
-LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg, uint8_t* const pbuf);
+LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
+                                                uint8_t* const pbuf);
 uint8_t LRA_USB_Get_Rx_Flag();
-
-
 
 #endif /* INC_RASP_CMD_H_ */

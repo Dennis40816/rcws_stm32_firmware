@@ -10,7 +10,9 @@
 
 /* public functions */
 
-HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle, uint32_t freq_hz, uint16_t duty) {
+HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle,
+                               uint32_t freq_hz,
+                               uint16_t duty) {
   if (handle == NULL || handle->htim == NULL)
     return HAL_ERROR;
 
@@ -61,7 +63,8 @@ HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM_t* handle) {
  * @param freq_hz desired frequency in Hz
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle, uint32_t freq_hz) {
+HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle,
+                                           uint32_t freq_hz) {
   if (handle == NULL || handle->htim == NULL || freq_hz == 0)
     return HAL_ERROR;
 
@@ -93,7 +96,7 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle, uint32_t freq_hz) 
  * @param duty_permil Duty cycle in permils. e.g. 896 ‰ = 896 = 89.6%. Therefore
  * duty_permil should be less than 1000.
  * @return HAL_StatusTypeDef
- * 
+ *
  */
 /* XXX, need to be optimized */
 HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
@@ -117,13 +120,13 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
   if (ARR_cache < ARR_min || ARR_cache > 65535)
     return HAL_ERROR;
 
-    /* TODO: calculate new CCR value */
-    // uint32_t new_CCR = (div10_remain)
-    //                        ? (ARR_cache + 1) / 1000.0 * duty_permil
-    //                        : (ARR_cache + 1) / 100.0 * duty_permil / 10;
+  /* TODO: calculate new CCR value */
+  // uint32_t new_CCR = (div10_remain)
+  //                        ? (ARR_cache + 1) / 1000.0 * duty_permil
+  //                        : (ARR_cache + 1) / 100.0 * duty_permil / 10;
   uint16_t new_CCR = (ARR_cache + 1) / 1000.0 * duty_permil;
 
-    /* update to hardware register CCR */
+  /* update to hardware register CCR */
   __HAL_TIM_SET_COMPARE(handle->htim, handle->ch, new_CCR);
 
   return HAL_OK;

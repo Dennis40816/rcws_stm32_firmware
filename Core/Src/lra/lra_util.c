@@ -7,11 +7,7 @@
 
 /* includes */
 
-#include "stdbool.h"
 #include "lra/lra_util.h"
+#include "stdbool.h"
 
 /* public functios */
-
-
-
-

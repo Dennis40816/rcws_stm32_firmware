@@ -18,12 +18,12 @@ LRA_LEDStates_t led_state = LRA_LED_DOWN;
 
 /**
  * @brief LED flash n time, blocked function
- * 
- * @param n 
- * @param delay 
+ *
+ * @param n
+ * @param delay
  */
 void LRA_LED_Flash_N(uint8_t n, uint32_t delay) {
-  for(uint8_t i = 0; i < n; i++) {
+  for (uint8_t i = 0; i < n; i++) {
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     HAL_Delay(delay);
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);

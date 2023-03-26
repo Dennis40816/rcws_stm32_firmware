@@ -12,7 +12,3 @@
 /* extern variables definitions */
 
 unsigned long long lra_timer_usec_counter = 0;
-
-
-
-

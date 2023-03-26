@@ -15,15 +15,11 @@
 // includes user defined macros, should be the top of included files
 #include "lra/lra_user_config.h"
 
-/* exported enums */ 
+/* exported enums */
 
-typedef enum {
-	LRA_LED_DOWN,
-	LRA_LED_UP,
-	LRA_LED_FLASH
-}LRA_LEDStates_t;
+typedef enum { LRA_LED_DOWN, LRA_LED_UP, LRA_LED_FLASH } LRA_LEDStates_t;
 
-/* extern variables */ 
+/* extern variables */
 
 extern LRA_LEDStates_t led_state;
 

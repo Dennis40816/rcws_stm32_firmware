@@ -35,8 +35,8 @@ static HAL_StatusTypeDef DRV2605L_UnsafeWriteReg(const DRV2605L_t* const pDrv,
 /* public functions */
 
 /**
- * @brief Return HAL_OK if device is DRV2605L. Return HAL_ERROR if device isn't DRV2605L.
- * Return -1 express failure
+ * @brief Return HAL_OK if device is DRV2605L. Return HAL_ERROR if device isn't
+ * DRV2605L. Return -1 express failure
  *
  * @param pDrv
  * @return int8_t
@@ -51,7 +51,7 @@ int8_t DRV2605L_ID_Validate(const DRV2605L_t* const pDrv) {
 
   if ((val >> 5) != 0x07)
     return HAL_ERROR;
-  
+
   return HAL_OK;
 }
 
@@ -67,7 +67,8 @@ HAL_StatusTypeDef DRV2605L_SoftReset(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
-  HAL_StatusTypeDef ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Mode, 0x01 << 7);
+  HAL_StatusTypeDef ret =
+      DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Mode, 0x01 << 7);
   if (ret != HAL_OK)
     return ret;
 
@@ -237,7 +238,7 @@ HAL_StatusTypeDef DRV2605L_Custom_Config(const DRV2605L_t* const pDrv) {
   /* Add your own code here */
 
   /* Some examples */
-  
+
   return HAL_OK;
 }
 
@@ -256,7 +257,8 @@ HAL_StatusTypeDef DRV2605L_SetMode_PWM(const DRV2605L_t* const pDrv) {
     return HAL_ERROR;
 
   // write 0x03 | 1<< 6 to Mode register (standby)
-  HAL_StatusTypeDef ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Mode, 0x03 | (1 << 6));
+  HAL_StatusTypeDef ret =
+      DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Mode, 0x03 | (1 << 6));
   if (ret != HAL_OK)
     return ret;
 
@@ -266,7 +268,8 @@ HAL_StatusTypeDef DRV2605L_SetMode_PWM(const DRV2605L_t* const pDrv) {
   if (ret != HAL_OK)
     return ret;
 
-  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Control3, tmp_DRV2605L_Control3 & ~(1 << 1));
+  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Control3,
+                                tmp_DRV2605L_Control3 & ~(1 << 1));
   if (ret != HAL_OK)
     return ret;
 
@@ -287,7 +290,8 @@ HAL_StatusTypeDef DRV2605L_Read_All(const DRV2605L_t* const pDrv,
   if (pDrv == NULL || pDrv->hi2c == NULL || pData == NULL)
     return HAL_ERROR;
 
-  return DRV2605L_UnsafeRead(pDrv, DRV2605L_Status, DRV2605L_Total_Reg_Num, pData);
+  return DRV2605L_UnsafeRead(pDrv, DRV2605L_Status, DRV2605L_Total_Reg_Num,
+                             pData);
 }
 
 /**
