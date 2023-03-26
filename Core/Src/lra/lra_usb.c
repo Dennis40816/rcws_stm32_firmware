@@ -28,7 +28,7 @@ LRA_DualBuf_t lra_usb_tx_dbuf;
 /* private variables */
 
 static LRA_USB_Mode_t lra_usb_mode = LRA_USB_NONE_MODE;
-static volatile uint8_t lra_usb_rx_flag = LRA_USB_RX_UNSET;
+static volatile uint8_t lra_usb_rx_flag = LRA_FLAG_UNSET;
 
 /* private functions declarations */
 
@@ -107,7 +107,7 @@ void LRA_USB_Print(const char* format, ...) {
  * CDC_Receive_FS()
  */
 void LRA_USB_Buffer_Copy(uint8_t* pdest, uint8_t* psrc, uint16_t len) {
-  lra_usb_rx_flag = LRA_USB_RX_SET;
+  lra_usb_rx_flag = LRA_FLAG_SET;
   memcpy(pdest, psrc, len);
 }
 
@@ -117,15 +117,15 @@ void LRA_USB_Buffer_Copy(uint8_t* pdest, uint8_t* psrc, uint16_t len) {
  * @return LRA_USB_Parse_Precheck_t
  */
 LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
-                                             uint8_t* const pbuf) {
-  if (LRA_USB_Get_Rx_Flag() == LRA_USB_RX_UNSET)
+                                                uint8_t* const pbuf) {
+  if (LRA_USB_Get_Rx_Flag() == LRA_FLAG_UNSET)
     return LRA_USB_PARSE_PRECHECK_RX_UNSET;
 
   if (pbuf == NULL || pmsg == NULL)
     return LRA_USB_PARSE_PRECHECK_NULLERR;
 
   // unset rx_flag
-  lra_usb_rx_flag = LRA_USB_RX_UNSET;
+  lra_usb_rx_flag = LRA_FLAG_UNSET;
 
   // assign to pmsg
   const volatile uint8_t pdata_len_H = *(pbuf + 1);
