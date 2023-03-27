@@ -227,7 +227,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
     case CDC_SET_CONTROL_LINE_STATE: {
       USBD_SetupReqTypedef* req = (USBD_SetupReqTypedef*)pbuf;
 
-      if (req->wValue & USB_CDC_DTR_SET) {
+      if (req->wValue & LRA_USB_DTR_SET) {
         // change LRA_USB_mode
         if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE)
           LRA_Modify_USB_Mode(LRA_USB_WAIT_FOR_INIT_MODE);

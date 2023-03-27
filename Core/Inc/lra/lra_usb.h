@@ -10,7 +10,7 @@
 
 /* defines */
 
-#define USB_CDC_DTR_SET (0x01)
+#define LRA_USB_DTR_SET (LRA_FLAG_SET)
 
 /* includes */
 
