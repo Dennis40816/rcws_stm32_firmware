@@ -36,4 +36,7 @@ typedef struct {
   volatile uint16_t buf_index[2];
 } LRA_DualBuf_t;
 
+/* public */
+
+int LRA_Util_MakeStrNoNull(uint8_t* dest, const char* format, ...);
 #endif /* INC_LRA_LRA_UTIL_H_ */
