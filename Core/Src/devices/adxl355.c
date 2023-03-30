@@ -665,6 +665,10 @@ HAL_StatusTypeDef ADXL355_RW(ADXL355_t* const pAdxl,
   return ret;
 }
 
+HAL_StatusTypeDef ADXL355_Reset_Device(ADXL355_t* const pAdxl) {
+  ADXL355_WriteReg(pAdxl, ADXL355_Reset, 0x52);
+}
+
 /* private functions */
 
 /**

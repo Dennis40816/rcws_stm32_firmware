@@ -142,6 +142,7 @@ HAL_StatusTypeDef ADXL355_Read_NewestData(ADXL355_t* const pAdxl,
                                           uint8_t* const rx_buf);
 HAL_StatusTypeDef ADXL355_Read_All(ADXL355_t* const pAdxl,
                                    uint8_t* const rx_buf);
+HAL_StatusTypeDef ADXL355_Reset_Device(ADXL355_t* const pAdxl);
 /* IO functions */
 
 HAL_StatusTypeDef ADXL355_WriteReg(ADXL355_t* const pAdxl,
