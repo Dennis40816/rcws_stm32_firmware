@@ -40,7 +40,7 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
     if (device_verify != HAL_OK)
       continue;
 
-    LRA_USB_Print(
+    LRA_USB_SysInfo(
         "LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n",
         i);
 

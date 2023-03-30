@@ -6,8 +6,8 @@
  */
 
 /* includes */
-
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "lra/lra_usb.h"
@@ -16,6 +16,7 @@
 #include "usbd_cdc_if.h"
 
 /* extern variables definitions */
+
 uint8_t lra_usb_dtr_flag;
 
 uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE] = {0};
@@ -77,22 +78,39 @@ LRA_USB_Mode_t LRA_Get_USB_Mode() {
  * @brief LRA printf-like usb print function, max length is 256 characters. Note
  * that this function maintains a static stack buffer with size 256.
  *
- * @details It's a non-blocking
+ * @warning This function required user to add "\r\n" at the end of format
+ *
+ * @details It's a non-blocking function
  * @param format
  * @param ...
  */
-void LRA_USB_Print(const char* format, ...) {
+void LRA_USB_SysInfo(const char* format, ...) {
 #ifdef LRA_SYSTEM_INFO
+#define BUF_SIZE 256
+
   va_list args;
   uint32_t length;
+  const uint8_t header_len = 3;
+  static uint8_t buffer[BUF_SIZE] = {0};
+
+  buffer[0] = USB_IN_CMD_SYS_INFO;
 
   va_start(args, format);
-
-  static uint8_t buffer[256] = {0};
-
-  length = vsnprintf((char*)buffer, 256, (char*)format, args);
+  // header_len sfor cmd_type + data_len = 3 bytes, -1 for '\0'
+  // length not include '\0'
+  length = vsnprintf((char*)(buffer + 3), BUF_SIZE - header_len - 1,
+                     (char*)format, args);
   va_end(args);
-  CDC_Transmit_FS(buffer, length);
+
+  buffer[1] = length >> 8;
+  buffer[2] = length;
+
+  LRA_USB_Buf_Len_Pair_t msg_send = {.pbuf = buffer,
+                                     .len = length + header_len};
+
+  LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
+
+#undef BUF_SIZE
 #endif
 }
 
@@ -119,10 +137,10 @@ void LRA_USB_Buffer_Copy(uint8_t* pdest, uint8_t* psrc, uint16_t len) {
 LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
                                                 uint8_t* const pbuf) {
   if (LRA_USB_Get_Rx_Flag() == LRA_FLAG_UNSET)
-    return LRA_USB_PARSE_PRECHECK_RX_UNSET;
+    return PC_RX_UNSET;
 
   if (pbuf == NULL || pmsg == NULL)
-    return LRA_USB_PARSE_PRECHECK_NULLERR;
+    return PC_DATA_PTR_IS_NULL;
 
   // unset rx_flag
   lra_usb_rx_flag = LRA_FLAG_UNSET;
@@ -131,51 +149,50 @@ LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
   const volatile uint8_t pdata_len_H = *(pbuf + 1);
   const volatile uint8_t pdata_len_L = *(pbuf + 2);
 
-  // XXX: assume first three bytes are always correct (cmd_type and pdata_len
-  // are both valid)
+  // XXX: assume first three bytes are always correct (cmd_type and
+  // pdata_len are both valid)
+  // pdata won't happen if out of bound (when data_len == 0)
   *pmsg = (LRA_USB_Msg_t){.cmd_type = *pbuf,
                           .pdata_len = pdata_len_H << 1 | pdata_len_L,
                           .pdata = pbuf + 3};
 
-  // pdata_len is 0
-  if (pmsg->pdata_len == 0)
-    return LRA_USB_PARSE_PRECHECK_LEN0;
+  // cmd_type valid check, see enum LRA_USB_Parse_Precheck_t
+  uint8_t basic_cmd_type = (pmsg->cmd_type) & BASIC_CMD_MASK;
+  if (basic_cmd_type == CMD_UNKNOWN_L || basic_cmd_type >= CMD_UNKNOWN_H)
+    return PC_CMD_UNKNOWN;
 
-  // check pmsg->pdata end of "\r\n"
+  // msg is not from OUT
+  if (((pmsg->cmd_type) & CMD_IS_OUT) == 0)
+    return PC_MSG_NOT_FROM_OUT;
+
+  // pdata_len check min check
+  if (pmsg->pdata_len == 0)
+    return PC_DATA_LEN0;
+
+  // pdata_len max check, 5 for cmd_type + data_len + EOP
+  if (pmsg->pdata_len >= LRA_USB_BUFFER_SIZE - 5)
+    return PC_DATA_LEN_OOB;
+
+  // check pmsg->pdata end with EOP ("\r\n")
   if ('\r' != *(pmsg->pdata + (pmsg->pdata_len - 2)) ||
       '\n' != *(pmsg->pdata + (pmsg->pdata_len - 1)))
-    return LRA_USB_PARSE_PRECHECK_EOFERR;
+    return PC_EOP_NOT_FOUND;
 
-  // pdata_len check and cmd_type check
-  switch (pmsg->cmd_type) {
-    /* constant len region */
-    case LRA_USB_CMD_INIT:
-      if (pmsg->pdata_len != LRA_USB_OUT_INIT_DL)
-        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
-      break;
-    case LRA_USB_CMD_UPDATE_PWM:
-      if (pmsg->pdata_len != LRA_USB_OUT_UPDATE_PWM_DL)
-        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
-      break;
-    case LRA_USB_CMD_RESET_REG:
-      if (pmsg->pdata_len != LRA_USB_OUT_RESET_REG_DL)
-        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
-      break;
-    case LRA_USB_CMD_RESET_STM32:
-      if (pmsg->pdata_len != LRA_USB_OUT_RESET_STM32_DL)
-        return LRA_USB_PARSE_PRECHECK_LEN_MISSMATCH;
-      break;
-
-    /* pdata_len not constant region */
-    case LRA_USB_CMD_UPDATE_REG:
-      // case LRA_SOMETHING_ELSE:
-      break;
-
-    default:
-      return LRA_USB_PARSE_PRECHECK_UNKNOWN;
+  // pdata_len constant len check
+  if (pmsg->cmd_type & CMD_DATA_LEN_CONST) {
+    switch (basic_cmd_type) {
+      case CMD_INIT:
+      case CMD_SWITCH_MODE:
+      case CMD_RESET_DEVICE:
+        if (pmsg->pdata_len != lra_usb_constmsg_out_len[basic_cmd_type])
+          return PC_DATA_LEN_MISMATCH;
+        break;
+      default:
+        break;
+    }
   }
 
-  return LRA_USB_PARSE_PRECHECK_OK;
+  return PC_ALL_PASS;
 }
 
 /**
@@ -185,4 +202,98 @@ LRA_USB_Parse_Precheck_t LRA_USB_Parse_Precheck(LRA_USB_Msg_t* const pmsg,
  */
 uint8_t LRA_USB_Get_Rx_Flag() {
   return lra_usb_rx_flag;
+}
+
+/**
+ * @brief This function is for writing acceleration data to host, which need a
+ *        function to avoid big size memcpy.
+ *
+ * @param cmd_type
+ * @param pbuf buffer head address of a given buffer
+ * @param data_len pure data length, not including header and EOP (total 5
+ * bytes)
+ * @return uint8_t
+ *
+ * @warning (uint8_t *)pdata should be at (pbuf + 3)
+ */
+HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Stack(LRA_USB_IN_Cmd_t cmd_type,
+                                                uint8_t* pbuf,
+                                                uint16_t data_len,
+                                                LRA_USB_Buf_Len_Pair_t* in_msg,
+                                                LRA_Flag_t add_eop) {
+  /* user should check max_len here */
+  if (data_len + 5 > LRA_ACC_BUFFER_SIZE)
+    return HAL_ERROR;
+
+  uint8_t package_info_len = add_eop ? 5 : 3;
+
+  if (pbuf != NULL && data_len != 0) {
+    *pbuf = cmd_type & NO_OUT_CMD_MASK;
+    *(pbuf + 1) = (uint8_t)data_len >> 8;
+    *(pbuf + 2) = (uint8_t)data_len;
+
+    if (add_eop) {
+      *(pbuf + 3 + data_len) = '\r';
+      *(pbuf + 3 + data_len + 1) = '\n';
+    }
+
+    in_msg->pbuf = pbuf;
+    in_msg->len = data_len + package_info_len;
+  }
+  return HAL_OK;
+}
+
+/**
+ * @brief
+ *
+ * @param cmd_type
+ * @param pdata
+ * @param data_len pure data length
+ * @param in_msg
+ * @return LRA_USB_Buf_Len_Pair_t*
+ *
+ * @note Here in_msg is a pointer to a struct which contains a pointer pbuf.
+ * Therefore you can directly assign malloc return val to pbuf because it will
+ * work like you pass a uint8_t** pointer p where *p point to pbuf.
+ */
+HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Heap(LRA_USB_IN_Cmd_t cmd_type,
+                                               uint8_t* pdata,
+                                               uint16_t data_len,
+                                               LRA_USB_Buf_Len_Pair_t* in_msg,
+                                               LRA_Flag_t add_eop) {
+  if (pdata != NULL && data_len != 0) {
+    uint8_t package_info_len = add_eop ? 5 : 3;
+    in_msg->pbuf = malloc(sizeof(uint8_t) * (data_len + package_info_len));
+    if (in_msg->pbuf == NULL)
+      return HAL_ERROR;
+
+    // make sure it is IN cmd
+    *(in_msg->pbuf) = cmd_type & NO_OUT_CMD_MASK;
+    *(in_msg->pbuf + 1) = (uint8_t)data_len >> 8;
+    *(in_msg->pbuf + 2) = (uint8_t)data_len;
+
+    memcpy(in_msg->pbuf + 3, pdata, data_len);
+
+    if (add_eop) {
+      *(in_msg->pbuf + 3 + data_len) = '\r';
+      *(in_msg->pbuf + 3 + data_len + 1) = '\n';
+    }
+
+    in_msg->len = data_len + package_info_len;
+  }
+
+  return HAL_OK;
+}
+
+HAL_StatusTypeDef LRA_USB_Send_Msg(const LRA_USB_Buf_Len_Pair_t* const pair,
+                                   const LRA_Flag_t block_flag) {
+  if (pair == NULL || pair->pbuf == NULL || pair->len == 0)
+    return HAL_ERROR;
+
+  USBD_StatusTypeDef ret;
+  do {
+    ret = CDC_Transmit_FS(pair->pbuf, pair->len);
+  } while (block_flag && (ret == USBD_BUSY));
+
+  return (ret == USBD_OK) ? HAL_OK : HAL_ERROR;
 }
