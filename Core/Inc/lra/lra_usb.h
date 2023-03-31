@@ -98,12 +98,13 @@ typedef enum {
  *        |__ OUT bit
  *
  *
- * H byte _ _ _ _____
- *        | | |   |__ Reserved
- *        | | |__ PRECHECK FAIL bit
- *        | |__ DATA PARSE FAIL bit
- *        |__ R TX UNSET FAIL bit
- *
+ * H byte _ _ _ _ _ ___
+ *        | | | | |  |__ Reserved bits
+ *        | | | | |__PRECHECK FAIL bit
+ *        | | | |__ CURRENT MODE FORBIDDEN FAIL bit
+ *        | | |__ RETURN MSG TX UNSET bit
+ *        | |__ DATA PARSE CONTENT FAIL bit
+ *        |__ INTERNAL OPERATION FAIL bit
  *              H   L
  * 1. retval == 0 | 0, no msg should be parserd
  * 2. retval == PR_PRECHECK_FAIL | 0, precheck failed with unknown cmd_type

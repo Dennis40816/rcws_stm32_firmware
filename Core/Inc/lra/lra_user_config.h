@@ -28,14 +28,6 @@
 #define USBD_MAX_POWER (250)
 #define LRA_USB_BUFFER_SIZE (1024)
 
-// msg string -- OUT
-#define LRA_USB_OUT_INIT_STR ("LAB602 LRA USB OUT init\r\n")
-#define LRA_USB_OUT_RESET_STM32_STR ("LAB602 LRA USB OUT STM32 Reset\r\n")
-
-// msg string -- IN
-#define LRA_USB_IN_INIT_STR ("LAB602 LRA USB IN init\r\n")
-#define LRA_USB_IN_RESET_STM32_STR ("LAB602 LRA USB IN STM32 Reset\r\n")
-
 /* ADXL355 */
 
 #define LRA_ACC_BUFFER_SIZE (1024)
