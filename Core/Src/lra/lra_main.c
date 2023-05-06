@@ -198,7 +198,6 @@ void LRA_Main_EnterPoint(void) {
   }
 
   /* TODO: MPU6500 init */
-
   if (ret != HAL_OK)
     error |= (1 << LRA_INIT_ERR_MPU6500);
 
@@ -253,6 +252,30 @@ void LRA_Main_EnterPoint(void) {
 
 #endif
 
+  /* LRA driving test */
+  // test ok !
+  HAL_StatusTypeDef tmp;
+  tmp = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
+  uint8_t test_data[48];
+  tmp = DRV2605L_Read_All(tca_drv_x.pDrv, test_data);
+  tmp = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
+  tmp = Lra_PWM_Dynamic_Set_Duty(&pwm_x, 500);
+
+  /* MPU 6500 read test -> test spi working properly -> same condition, failed after first read */
+//  uint8_t tx_tmp[3] = {0x75 | 0x80, 0, 0};
+//  uint8_t rx_tmp[3] = {0, 0};
+//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
+//                                                    3, 100);
+//  tx_tmp[0] = 0x1A | 0x80;
+//
+//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
+//                                                      3, 100);
+//
+//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
+//                                                      3, 100);
+
+// It's NSS problem -> change to software NSS
+
   while (1) {
     /* Loop update */
     LRA_USB_Main_Parser();
@@ -304,8 +327,8 @@ static uint16_t LRA_USB_Main_Parser() {
 
   f_ptr func_callback = NULL;
 
-  uint8_t* tx_data_buf = NULL;
-  uint16_t tx_data_buf_len = 0;
+  uint8_t* tx_data_pointer = NULL;
+  uint16_t tx_data_len = 0;
 
   /* state flags, default is everything fine
    * --------------------------------
@@ -338,7 +361,7 @@ static uint16_t LRA_USB_Main_Parser() {
     uint8_t cmd_is_unknown = (precheck_status == PC_CMD_UNKNOWN);
 
     // format msg, USB_OUT_CMD_PARSE_ERR, data length 2
-    uint8_t precheck_msg[32] = {0};
+    uint8_t precheck_msg[PARSER_ERR_BUF_SIZE] = {0};
     const uint8_t data_len = 2;
 
     LRA_USB_Buf_Len_Pair_t msg_send;
@@ -359,15 +382,31 @@ static uint16_t LRA_USB_Main_Parser() {
 
   /* start to parse pdata */
   volatile uint8_t* const cursor = pmsg.pdata;
-
+  static uint8_t tx_data_buf[PARSER_MSG_BUF_SIZE];
+  uint8_t basic_cmd_type = (pmsg.cmd_type & BASIC_CMD_MASK);
   /**
    * parser preprocess
    *
    * 1. 有固定字串可以比對的，進行比對 (應該只有 init)
    * 2. 需要執行內部程式，執行
    *
+   * 以下是每個指令的成功返回格式， {} 代表變數
+   * 失敗會返回錯誤類型以及錯誤的指令類別，見 CMD_PARSE_ERR
+   *
+   * A. CMD_SYS_INFO
+   * B. CMD_PARSE_ERR
+   * 這兩者是上位機負責處理，不應在 STM32 處理
+   *
+   * C. CMD_SWITCH_MODE
+   * 返回: header + {current mode} + new line
+   *
+   * D. CMD_INIT
+   * 返回: header + init string + new line
+   *
+   * E. CMD_RESET_DEVICE
+   * 返回: header + {device_index} + new line
    */
-  switch (pmsg.cmd_type & BASIC_CMD_MASK) {
+  switch (basic_cmd_type) {
     case CMD_SYS_INFO:
     case CMD_PARSE_ERR:
       // usually we don't get here, ignore
@@ -380,9 +419,14 @@ static uint16_t LRA_USB_Main_Parser() {
         case LRA_USB_CRTL_MODE:
         case LRA_USB_DATA_MODE:
           LRA_Modify_USB_Mode(mode);
-          tx_data_buf = lra_usb_constmsg_in[CMD_SWITCH_MODE];
-          tx_data_buf_len = lra_usb_constmsg_in_len[CMD_SWITCH_MODE];
+
+          tx_data_pointer = tx_data_buf;
+          *(tx_data_pointer) = mode;
+          *(tx_data_pointer + 1) = '\r';
+          *(tx_data_pointer + 2) = '\n';
+          tx_data_len = lra_usb_constmsg_in_len[CMD_SWITCH_MODE];
           break;
+
         default:
           parse_content_error_flag = LRA_FLAG_SET;
           break;
@@ -404,8 +448,8 @@ static uint16_t LRA_USB_Main_Parser() {
         LRA_Modify_USB_Mode(LRA_USB_CRTL_MODE);
 
         // set tx, len
-        tx_data_buf = lra_usb_constmsg_in[CMD_INIT];
-        tx_data_buf_len = lra_usb_constmsg_in_len[CMD_INIT];
+        tx_data_pointer = lra_usb_constmsg_in[CMD_INIT];
+        tx_data_len = lra_usb_constmsg_in_len[CMD_INIT];
       } else {
         parse_content_error_flag = LRA_FLAG_SET;
       }
@@ -414,23 +458,15 @@ static uint16_t LRA_USB_Main_Parser() {
     /**
      * Update device's registers.
      *
+     * @param
      * first byte: device
      * second byte: internal address begin
      * third byte: internal address end
      * fourth byte: data start here
+     * eop: \r\n
      *
      */
-    case CMD_UPDATE_REG:
-      if (LRA_Get_USB_Mode() != LRA_USB_CRTL_MODE) {
-        mode_error_flag = LRA_FLAG_SET;
-        break;
-      }
-
-      // TODO
-
-      break;
-
-    case CMD_GET_REG:
+    case CMD_UPDATE_REG: {
       if (LRA_Get_USB_Mode() != LRA_USB_CRTL_MODE) {
         mode_error_flag = LRA_FLAG_SET;
         break;
@@ -442,30 +478,122 @@ static uint16_t LRA_USB_Main_Parser() {
         break;
       }
 
+      // TODO
+
+      break;
+    }
+
+    /**
+     * Request device's registers.
+     *
+     * @param
+     * first byte: device
+     * second byte: internal address begin
+     * third byte: internal address end
+     * eop: \r\n
+     *
+     */
+    /* This cmd will append eop at the end of data automatically */
+    case CMD_GET_REG: {
+      if (LRA_Get_USB_Mode() != LRA_USB_CRTL_MODE) {
+        mode_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      uint8_t device_index = *cursor;
+      if (!LRA_Device_Is_Valid(device_index)) {
+        parse_content_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      uint8_t begin_addr = *(cursor + 1);
+      uint8_t end_addr = *(cursor + 2);
+
+      // check addr in order
+      if (end_addr < begin_addr) {
+        parse_content_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      uint16_t addr_len = end_addr - begin_addr + 1;
+      return_msg_add_eop_flag = LRA_FLAG_SET;
+      tx_data_pointer = tx_data_buf;
+
       switch (device_index) {
         case LRA_DEVICE_MPU6500:
+          // TODO:
           break;
 
-        case LRA_DEVICE_ADXL355:
-          // TODO: range check func
+        case LRA_DEVICE_ADXL355: {
+          uint8_t addr_overlap = Check_Addr_Overlap(
+              begin_addr, end_addr, ADXL355_CONTINUOUS_READ_FORBIDDEN_START,
+              ADXL355_CONTINUOUS_READ_FORBIDDEN_END);
 
-          // read to tmp and assign to tx_buf
+          if (addr_overlap) {
+            parse_content_error_flag = LRA_FLAG_SET;
+            break;
+          }
 
-          return_msg_add_eop_flag = LRA_FLAG_SET;
+          /* addr upper bound check */
+          if (end_addr > ADXL355_Reset) {
+            parse_content_error_flag = LRA_FLAG_SET;
+            break;
+          }
+
+          // read to tx_data_buf (bias cmd(1) + len(2) + device(1) +
+          // begin_addr(1) + end_addr(1) = 6 bytes)
+          HAL_StatusTypeDef ret =
+              ADXL355_LazyRead(&adxl355, begin_addr, tx_data_buf + 6, addr_len);
+
+          if (ret != HAL_OK) {
+            internal_operation_error_flag = LRA_FLAG_SET;
+            break;
+          }
+
           break;
+        }
 
         case LRA_DEVICE_DRV2605L_X:
         case LRA_DEVICE_DRV2605L_Y:
-        case LRA_DEVICE_DRV2605L_Z:
-          /* TODO */
+        case LRA_DEVICE_DRV2605L_Z: {
+          /* addr upper bound check */
+          if (end_addr > DRV2605L_LRA_Period) {
+            parse_content_error_flag = LRA_FLAG_SET;
+            break;
+          }
+
+          uint8_t drv_dev_index = device_index - LRA_DEVICE_DRV2605L_X;
+          const TCA_DRV_Pair_t* const pdrv_dev_pair =
+              i2c_devs.pDevPair[drv_dev_index];
+
+          HAL_StatusTypeDef ret;
+          ret = TCA_DRV_Pair_Read(pdrv_dev_pair, begin_addr, addr_len,
+                                  tx_data_buf + 6);
+
+          if (ret != HAL_OK) {
+            internal_operation_error_flag = LRA_FLAG_SET;
+            break;
+          }
+
           break;
+        }
 
         default:
           parse_content_error_flag = LRA_FLAG_SET;
           break;
       }
 
+      /* GetReg range - make msg in stack, therefore reserve header placeholder
+       */
+      *(tx_data_pointer + 3) = device_index;
+      *(tx_data_pointer + 4) = begin_addr;
+      *(tx_data_pointer + 5) = end_addr;
+
+      // 3 for GetReg range (device_index ...)
+      tx_data_len = addr_len + 3;
+
       break;
+    }
 
     case CMD_RESET_DEVICE: {
       if (LRA_Get_USB_Mode() != LRA_USB_CRTL_MODE) {
@@ -513,8 +641,12 @@ static uint16_t LRA_USB_Main_Parser() {
           parse_content_error_flag = LRA_FLAG_SET;
           break;
       }
-      tx_data_buf = lra_usb_constmsg_in[CMD_RESET_DEVICE];
-      tx_data_buf_len = lra_usb_constmsg_in_len[CMD_RESET_DEVICE];
+
+      tx_data_pointer = tx_data_buf;
+      *tx_data_pointer = device_index;
+      *(tx_data_pointer + 1) = '\r';
+      *(tx_data_pointer + 2) = '\n';
+      tx_data_len = lra_usb_constmsg_in_len[CMD_RESET_DEVICE];
 
       break;
     }
@@ -535,13 +667,14 @@ static uint16_t LRA_USB_Main_Parser() {
       /* TODO: update frequency and arg */
       break;
 
-    case CMD_UPDATE_ACC:  // XXX
+    case CMD_UPDATE_ACC:
       if (LRA_Get_USB_Mode() != LRA_USB_DATA_MODE) {
         mode_error_flag = LRA_FLAG_SET;
         break;
       }
-      /* something goes wrong, you will never get here */
 
+      /* something goes wrong, you will never get here */
+      internal_operation_error_flag = LRA_FLAG_SET;
       break;
   }
 
@@ -558,7 +691,7 @@ static uint16_t LRA_USB_Main_Parser() {
       parser_status |= PR_INTERNAL_OPERATION_FAIL;
     }
 
-    uint8_t parse_err_msg[32];
+    uint8_t parse_err_msg[PARSER_ERR_BUF_SIZE];
     const uint8_t parse_err_msg_len = 2;
     parse_err_msg[3] = parser_status >> 8;
     parse_err_msg[4] = parser_status;
@@ -575,21 +708,36 @@ static uint16_t LRA_USB_Main_Parser() {
 
   /* reply required region */
   if (!(pmsg.cmd_type & CMD_NR)) {
-    /* make msg (stack) */
-    if (tx_data_buf == NULL || tx_data_buf_len == 0) {
+    if (tx_data_pointer == NULL || tx_data_len == 0) {
       // you should never get here
       return PR_RETURN_MSG_TX_UNSET_FAIL | pmsg.cmd_type;
     }
 
-    /* make msg (heap) */
     LRA_USB_Buf_Len_Pair_t msg_send;
-    LRA_USB_Generate_IN_Msg_Heap(pmsg.cmd_type, tx_data_buf, tx_data_buf_len,
-                                 &msg_send, return_msg_add_eop_flag);
-    /* send msg */
-    HAL_StatusTypeDef send_status = LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
-    /* free msg */
-    if (msg_send.pbuf != NULL)
-      free(msg_send.pbuf);
+    HAL_StatusTypeDef send_status;
+
+    /* make msg (stack) */
+    if (basic_cmd_type == CMD_GET_REG) {
+      LRA_USB_Generate_IN_Msg_Stack(pmsg.cmd_type, tx_data_pointer, tx_data_len,
+                                    &msg_send, return_msg_add_eop_flag);
+      send_status = LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
+    }
+
+    /* make msg (heap) */
+    else {
+      LRA_USB_Generate_IN_Msg_Heap(pmsg.cmd_type, tx_data_pointer, tx_data_len,
+                                   &msg_send, return_msg_add_eop_flag);
+      /* send msg */
+      send_status = LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
+      /* free msg */
+      if (msg_send.pbuf != NULL)
+        free(msg_send.pbuf);
+    }
+
+    /* check send_status, there's no resend mechanism in current version !! */
+    if (send_status != HAL_OK) {
+      /* TODO: add USB busy flag here */
+    }
   }
 
   /* call callback */

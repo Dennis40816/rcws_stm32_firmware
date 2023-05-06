@@ -112,7 +112,7 @@ typedef enum {
  * type
  * 4. retval == PR_RETURN_MSG_TX_UNSET_FAIL | no 0, tx_data_buf or
  * tx_data_buf_len not set fail
- * 5. retval == PR_DATA_PARSE_FORMAT_FAIL | no 0, some error happened
+ * 5. retval == PR_DATA_PARSE_CONTENT_FAIL | no 0, some error happened
  */
 typedef enum {
   PR_RX_UNSET = (uint16_t)0,

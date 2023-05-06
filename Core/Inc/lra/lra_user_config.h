@@ -41,4 +41,9 @@
 // half of 1000 (1000‰)
 #define LRA_DEFAULT_PWM_DUTY (500)
 
+/* Parser related */
+
+#define PARSER_ERR_BUF_SIZE (32)
+#define PARSER_MSG_BUF_SIZE (256)
+
 #endif /* INC_LRA_LRA_USER_CONFIG_H_ */

@@ -44,14 +44,12 @@ HAL_StatusTypeDef LRA_I2C_Devs_Init(const LRA_I2C_Devs_t* const pDevs) {
         "LRA DevPair[%d] identifies as DRV2605L, starts to init process\r\n",
         i);
 
-    ret = DRV2605L_WriteReg(pPair->pDrv, DRV2605L_Mode, 0x07);
-
     // reset device
     ret = DRV2605L_SoftReset(pPair->pDrv);
     if (ret != HAL_OK)
       return ret;
 
-    // set to PWM mode
+    // set to open loop LRA PWM mode
     ret = DRV2605L_SetMode_PWM(pPair->pDrv);
     if (ret != HAL_OK)
       return ret;

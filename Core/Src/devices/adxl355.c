@@ -123,11 +123,11 @@ HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl) {
     pAdxl->timeout_ms = 1;
 
   // verify device part id
-  if (ADXL355_ID_Verify(pAdxl) <= 0)
+  if (ADXL355_ID_Verify(pAdxl) != HAL_OK)
     return HAL_ERROR;
 
   // range check for pAdxl->range
-  if (!(pAdxl->range == ADXL355_ACC_2G && pAdxl->range == ADXL355_ACC_4G &&
+  if (!(pAdxl->range == ADXL355_ACC_2G || pAdxl->range == ADXL355_ACC_4G ||
         pAdxl->range == ADXL355_ACC_8G))
     return HAL_ERROR;
 
@@ -256,7 +256,7 @@ int8_t ADXL355_ID_Verify(ADXL355_t* const pAdxl) {
   if (ret != HAL_OK)
     return -1;
 
-  return (val == 0xED) ? 1 : 0;
+  return (val == 0xED) ? HAL_OK : HAL_ERROR;
 }
 
 /**
@@ -666,7 +666,7 @@ HAL_StatusTypeDef ADXL355_RW(ADXL355_t* const pAdxl,
 }
 
 HAL_StatusTypeDef ADXL355_Reset_Device(ADXL355_t* const pAdxl) {
-  ADXL355_WriteReg(pAdxl, ADXL355_Reset, 0x52);
+  return ADXL355_WriteReg(pAdxl, ADXL355_Reset, 0x52);
 }
 
 /* private functions */

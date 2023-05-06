@@ -122,7 +122,6 @@ HAL_StatusTypeDef DRV2605L_StandbyUnset(const DRV2605L_t* const pDrv) {
     return ret;
 
   // set standby bit always to 0, (~(1 << 6)) == 0b1011 1111
-  // uint8_t new_val = (~(1 << 6)) & val;
   val &= ~(1 << 6);
 
   // update to register
@@ -243,10 +242,10 @@ HAL_StatusTypeDef DRV2605L_Custom_Config(const DRV2605L_t* const pDrv) {
 }
 
 /**
- * @brief Set DRV2605L to PWM control mode with standby bit set. Activate
- * actuator by calling DRV2605L_StandbyUnset(). Note that if you want to stop
- * driving actuator, you must set STANDBY bit to 1. DRV2605L_GoUnset() [Go bit]
- * is useless in PWM mode. Call DRV2605L_StandbySet() instead.
+ * @brief Set DRV2605L to PWM open loop control mode with standby bit set.
+ * Activate actuator by calling DRV2605L_StandbyUnset(). Note that if you want
+ * to stop driving actuator, you must set STANDBY bit to 1. DRV2605L_GoUnset()
+ * [Go bit] is useless in PWM mode. Call DRV2605L_StandbySet() instead.
  *
  * @details See datasheet p.27 and p.31
  * @param pDrv
@@ -256,7 +255,7 @@ HAL_StatusTypeDef DRV2605L_SetMode_PWM(const DRV2605L_t* const pDrv) {
   if (pDrv == NULL || pDrv->hi2c == NULL)
     return HAL_ERROR;
 
-  // write 0x03 | 1<< 6 to Mode register (standby)
+  // write 0x03(pwm) | 1 << 6 to Mode register (standby)
   HAL_StatusTypeDef ret =
       DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Mode, 0x03 | (1 << 6));
   if (ret != HAL_OK)
@@ -268,8 +267,36 @@ HAL_StatusTypeDef DRV2605L_SetMode_PWM(const DRV2605L_t* const pDrv) {
   if (ret != HAL_OK)
     return ret;
 
-  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Control3,
-                                tmp_DRV2605L_Control3 & ~(1 << 1));
+  tmp_DRV2605L_Control3 &= ~(1 << 1);
+
+  // set to open loop mode
+  tmp_DRV2605L_Control3 |= 1 << 0;
+
+  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Control3, tmp_DRV2605L_Control3);
+  if (ret != HAL_OK)
+    return ret;
+
+  // set to LRA mode
+  uint8_t tmp_DRV2605L_FeedBack;
+  ret = DRV2605L_UnsafeReadReg(pDrv, DRV2605L_Feedback_Control,
+                               &tmp_DRV2605L_FeedBack);
+  if (ret != HAL_OK)
+    return ret;
+
+  tmp_DRV2605L_FeedBack |= (1 << 7);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Feedback_Control,
+                                tmp_DRV2605L_FeedBack);
+  if (ret != HAL_OK)
+    return ret;
+
+  // set AC_COUPLE to 0
+  uint8_t tmp_DRV2605L_C1;
+  ret = DRV2605L_UnsafeReadReg(pDrv, DRV2605L_Control1, &tmp_DRV2605L_C1);
+  if (ret != HAL_OK)
+    return ret;
+
+  tmp_DRV2605L_C1 &= ~(1 << 5);
+  ret = DRV2605L_UnsafeWriteReg(pDrv, DRV2605L_Control1, tmp_DRV2605L_C1);
   if (ret != HAL_OK)
     return ret;
 

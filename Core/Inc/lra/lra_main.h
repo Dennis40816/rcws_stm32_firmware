@@ -23,6 +23,7 @@ typedef enum {
   LRA_DEVICE_DRV2605L_X,
   LRA_DEVICE_DRV2605L_Y,
   LRA_DEVICE_DRV2605L_Z,
+  LRA_DEVICE_ALL,
   LRA_DEVICE_INVALID
 } LRA_Device_Index_t;
 
@@ -35,6 +36,7 @@ typedef enum {
 
 // for main.c (not lra_main.c)
 #include "lra/lra_LED.h"
+#include "lra/lra_util.h"
 
 /* macros */
 

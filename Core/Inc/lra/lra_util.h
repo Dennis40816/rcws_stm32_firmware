@@ -39,4 +39,8 @@ typedef struct {
 /* public */
 
 int LRA_Util_MakeStrNoNull(uint8_t* dest, const char* format, ...);
+uint8_t Check_Addr_Overlap(uint32_t addr_begin,
+                           uint32_t addr_end,
+                           uint32_t f_addr_begin,
+                           uint32_t f_addr_end);
 #endif /* INC_LRA_LRA_UTIL_H_ */

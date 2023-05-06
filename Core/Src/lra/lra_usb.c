@@ -222,15 +222,20 @@ HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Stack(LRA_USB_IN_Cmd_t cmd_type,
                                                 LRA_USB_Buf_Len_Pair_t* in_msg,
                                                 LRA_Flag_t add_eop) {
   /* user should check max_len here */
-  if (data_len + 5 > LRA_ACC_BUFFER_SIZE)
+  const uint8_t header_len = 3;
+  const uint8_t eop_len = add_eop ? 2 : 0;
+  uint8_t package_info_len = header_len + eop_len;
+
+  if (data_len + package_info_len > LRA_USB_BUFFER_SIZE)
     return HAL_ERROR;
 
-  uint8_t package_info_len = add_eop ? 5 : 3;
-
   if (pbuf != NULL && data_len != 0) {
+    // make msg become IN type
     *pbuf = cmd_type & NO_OUT_CMD_MASK;
-    *(pbuf + 1) = (uint8_t)data_len >> 8;
-    *(pbuf + 2) = (uint8_t)data_len;
+
+    // calculate len including \r\n
+    *(pbuf + 1) = (uint8_t)(data_len + eop_len) >> 8;
+    *(pbuf + 2) = (uint8_t)(data_len + eop_len);
 
     if (add_eop) {
       *(pbuf + 3 + data_len) = '\r';
@@ -255,6 +260,8 @@ HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Stack(LRA_USB_IN_Cmd_t cmd_type,
  * @note Here in_msg is a pointer to a struct which contains a pointer pbuf.
  * Therefore you can directly assign malloc return val to pbuf because it will
  * work like you pass a uint8_t** pointer p where *p point to pbuf.
+ *
+ * @warning You need to free in_msg->pbuf outside of the function.
  */
 HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Heap(LRA_USB_IN_Cmd_t cmd_type,
                                                uint8_t* pdata,
@@ -262,15 +269,19 @@ HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Heap(LRA_USB_IN_Cmd_t cmd_type,
                                                LRA_USB_Buf_Len_Pair_t* in_msg,
                                                LRA_Flag_t add_eop) {
   if (pdata != NULL && data_len != 0) {
-    uint8_t package_info_len = add_eop ? 5 : 3;
+    const uint8_t header_len = 3;
+    const uint8_t eop_len = add_eop ? 2 : 0;
+    uint8_t package_info_len = header_len + eop_len;
+
     in_msg->pbuf = malloc(sizeof(uint8_t) * (data_len + package_info_len));
     if (in_msg->pbuf == NULL)
       return HAL_ERROR;
 
-    // make sure it is IN cmd
+    // make msg become IN type
     *(in_msg->pbuf) = cmd_type & NO_OUT_CMD_MASK;
-    *(in_msg->pbuf + 1) = (uint8_t)data_len >> 8;
-    *(in_msg->pbuf + 2) = (uint8_t)data_len;
+
+    *(in_msg->pbuf + 1) = (uint8_t)(data_len + eop_len) >> 8;
+    *(in_msg->pbuf + 2) = (uint8_t)(data_len + eop_len);
 
     memcpy(in_msg->pbuf + 3, pdata, data_len);
 

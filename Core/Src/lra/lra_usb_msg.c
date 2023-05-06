@@ -38,5 +38,5 @@ const uint16_t lra_usb_constmsg_out_len[32] = {
     [CMD_RESET_DEVICE] = SINGLE_CHAR_MSG_LEN};
 const uint16_t lra_usb_constmsg_in_len[32] = {
     [CMD_INIT] = sizeof(msg_init) - 1,
-    [CMD_SWITCH_MODE] = sizeof(msg_newline) - 1,
-    [CMD_RESET_DEVICE] = sizeof(msg_newline) - 1};
+    [CMD_SWITCH_MODE] = SINGLE_CHAR_MSG_LEN,
+    [CMD_RESET_DEVICE] = SINGLE_CHAR_MSG_LEN};

@@ -26,3 +26,18 @@ int LRA_Util_MakeStrNoNull(uint8_t* dest, const char* format, ...) {
   memcpy(dest, buffer, length);
   return length;
 }
+
+uint8_t Check_Addr_Overlap(uint32_t addr_begin,
+                           uint32_t addr_end,
+                           uint32_t f_addr_begin,
+                           uint32_t f_addr_end) {
+  uint8_t addr_begin_in_forbidden_range =
+      (addr_begin >= f_addr_begin) && (addr_begin < f_addr_end);
+  uint8_t addr_end_in_forbidden_range =
+      (addr_end > f_addr_begin) && (addr_end <= f_addr_end);
+  uint8_t forbidden_range_inside_addr_range =
+      (addr_begin <= f_addr_begin) && (addr_end >= f_addr_end);
+
+  return (addr_begin_in_forbidden_range || addr_end_in_forbidden_range ||
+          forbidden_range_inside_addr_range);
+}
