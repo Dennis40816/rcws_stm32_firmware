@@ -106,8 +106,8 @@ LRA_PWM_t* pwm_arr[] = {&pwm_x, &pwm_y, &pwm_z};
 /* create ADXL355 instance */
 ADXL355_t adxl355 = {
     .hspi = &hspi3,
-    .nss_pin = 0,
-    .nss_port = NULL,
+    .nss_pin = SPI3_NSS_Pin,
+    .nss_port = SPI3_NSS_GPIO_Port,
     .range = ADXL355_ACC_2G,
     .timeout_ms = 1,
 

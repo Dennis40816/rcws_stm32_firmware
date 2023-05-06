@@ -68,6 +68,8 @@ void Error_Handler(void);
 #define PWM_Z_GPIO_Port GPIOA
 #define LED_Pin GPIO_PIN_3
 #define LED_GPIO_Port GPIOA
+#define SPI2_NSS_Pin GPIO_PIN_12
+#define SPI2_NSS_GPIO_Port GPIOB
 #define MPU_INT_Pin GPIO_PIN_6
 #define MPU_INT_GPIO_Port GPIOC
 #define MPU_INT_EXTI_IRQn EXTI9_5_IRQn
@@ -77,6 +79,8 @@ void Error_Handler(void);
 #define PWM_Y_OPT_GPIO_Port GPIOC
 #define PWM_X_OPT_Pin GPIO_PIN_8
 #define PWM_X_OPT_GPIO_Port GPIOA
+#define SPI3_NSS_Pin GPIO_PIN_15
+#define SPI3_NSS_GPIO_Port GPIOA
 #define KX_INT2_Pin GPIO_PIN_2
 #define KX_INT2_GPIO_Port GPIOD
 #define KX_INT2_EXTI_IRQn EXTI2_IRQn
