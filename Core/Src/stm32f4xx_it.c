@@ -60,6 +60,7 @@
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -216,6 +217,20 @@ void EXTI2_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles EXTI line4 interrupt.
+  */
+void EXTI4_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI4_IRQn 0 */
+
+  /* USER CODE END EXTI4_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(KX_INT1_Pin);
+  /* USER CODE BEGIN EXTI4_IRQn 1 */
+
+  /* USER CODE END EXTI4_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[9:5] interrupts.
   */
 void EXTI9_5_IRQHandler(void)
@@ -254,23 +269,28 @@ void TIM6_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_IRQn 1 */
 
-  // LED processing
-  static uint8_t n = 0;
-  switch (led_state) {
-    case LRA_LED_FLASH:
-      // 10 for 1 second
-      if (n++ > 10) {
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-        n = 0;
-      }
+  // LED control
+  LRA_IT_LED_Flash_Every(10);
 
-    default:
-      break;
-  }
-
-  // TODO: lra timer increase 1
+  // USB_DATA_MODE: acc_send_flag
+  if (LRA_Get_USB_Mode() == LRA_USB_DATA_MODE)
+    acc_should_send_flag = LRA_FLAG_SET;
 
   /* USER CODE END TIM6_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
 }
 
 /**

@@ -86,6 +86,7 @@ void Error_Handler(void);
 #define KX_INT2_EXTI_IRQn EXTI2_IRQn
 #define KX_INT1_Pin GPIO_PIN_4
 #define KX_INT1_GPIO_Port GPIOB
+#define KX_INT1_EXTI_IRQn EXTI4_IRQn
 #define TCA_NRST_Pin GPIO_PIN_5
 #define TCA_NRST_GPIO_Port GPIOB
 
