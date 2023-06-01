@@ -18,7 +18,8 @@
     "usbd_conf.h": "c",
     "usbd_cdc.h": "c",
     "lra_spi_devices.h": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "adxl355.h": "c"
   },
 
   /* C/C++ */
