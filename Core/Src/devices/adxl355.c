@@ -26,8 +26,6 @@
  * If you still don't understand, please see ADXL355_LazyRead() for more
  * details.
  */
-#define ADXL355_SPI_W (0x00)
-#define ADXL355_SPI_R (0x01)
 
 // not including FIFO
 #define ADXL355_MAX_RW_REG_NUM_ATONCE 18
@@ -45,8 +43,6 @@ const uint8_t adxl355_2nd_regnum = 18;
 
 /* static functions declarations */
 
-static void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl);
-static void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl);
 static HAL_StatusTypeDef ADXL355_UserConfig(ADXL355_t* const pAdxl);
 
 /* public functions */
@@ -669,14 +665,12 @@ HAL_StatusTypeDef ADXL355_Reset_Device(ADXL355_t* const pAdxl) {
   return ADXL355_WriteReg(pAdxl, ADXL355_Reset, 0x52);
 }
 
-/* private functions */
-
 /**
  * @brief Pull low NSS pin if using software NSS
  *
  * @param pAdxl
  */
-static void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl) {
+void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl) {
   if (pAdxl->nss_port == NULL)
     return;
 
@@ -688,12 +682,14 @@ static void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl) {
  *
  * @param pAdxl
  */
-static void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl) {
+void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl) {
   if (pAdxl->nss_port == NULL)
     return;
 
   HAL_GPIO_WritePin(pAdxl->nss_port, pAdxl->nss_pin, GPIO_PIN_SET);
 }
+
+/* private functions */
 
 /**
  * @brief User defined, left empty if not use.

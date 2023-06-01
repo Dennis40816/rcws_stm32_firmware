@@ -10,6 +10,9 @@
 
 /* macros */
 
+#define ADXL355_SPI_W (0x00)
+#define ADXL355_SPI_R (0x01)
+
 /* includes */
 
 #include "stm32f4xx_hal.h"
@@ -110,9 +113,14 @@ typedef struct {
 } ADXL355_t;
 
 typedef struct {
-  float data[3];  // x, y, z
   float t;
+  float data[3];  // x, y, z
 } ADXL355_DataSet_t;
+
+typedef struct {
+  float t;
+  uint8_t data[3][3];
+} ADXL355_RawDataSet_t;
 
 /* public functions */
 
@@ -165,5 +173,7 @@ HAL_StatusTypeDef ADXL355_RW(ADXL355_t* const pAdxl,
                              uint8_t* const tx_buf,
                              uint8_t* const rx_buf,
                              const int16_t total_size);
+void ADXL355_Software_NSS_Enable(ADXL355_t* const pAdxl);
+void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl);
 
 #endif /* INC_DEVICES_ADXL355_H_ */

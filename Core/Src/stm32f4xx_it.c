@@ -22,8 +22,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lra/lra_LED.h"
-#include "lra/lra_timer.h"
+#include "lra/lra_it.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +61,8 @@ extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 /* USER CODE BEGIN EV */
-
+extern ADXL355_t adxl355;           // in lra_main.c
+extern LRA_DualBuf_t lra_acc_dbuf;  // in lra_spi_devices.c
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -226,6 +226,9 @@ void EXTI4_IRQHandler(void)
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(KX_INT1_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
+
+  // DRDY callback
+  LRA_IT_ADXL355_DRDY_Callback_P(&adxl355, &lra_acc_dbuf);
 
   /* USER CODE END EXTI4_IRQn 1 */
 }
