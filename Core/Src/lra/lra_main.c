@@ -24,7 +24,7 @@
 #include "string.h"
 #include "usbd_cdc_if.h"
 
-/* extern */
+/* extern HAL variables */
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -37,9 +37,12 @@ extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim8;
 
+/* extern self defined variables */
+
 /* private function declarations */
 
 static uint16_t LRA_USB_Main_Parser();
+static uint16_t LRA_USB_Send_ACC();
 
 /* global vars */
 
@@ -145,27 +148,19 @@ void LRA_Main_EnterPoint(void) {
   drv_z.dev_addr = drv2605l_default_addr;
   drv_z.timeout_ms = drv2605l_default_timeout_ms;
 
-  /* Buffer Init */
-  // TODO: 移動至 usb 和 acc 中
-  uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
-  uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
-
-  uint8_t lra_acc_buf1[LRA_ACC_BUFFER_SIZE] = {0};
-  uint8_t lra_acc_buf2[LRA_ACC_BUFFER_SIZE] = {0};
-
   lra_usb_tx_dbuf = (LRA_DualBuf_t){
       .buf_full = {0, 0},
       .buf_index = {0, 0},
-      .buf_size = {LRA_USB_BUFFER_SIZE, LRA_USB_BUFFER_SIZE},
-      .cur_buf = 0,
+      .buf_size = LRA_USB_BUFFER_SIZE,
+      .cur_w_buf = 0,
       .dbuf = {lra_usb_tx_buf1, lra_usb_tx_buf2},
   };
 
   lra_acc_dbuf = (LRA_DualBuf_t){
       .buf_full = {0, 0},
       .buf_index = {0, 0},
-      .buf_size = {LRA_ACC_BUFFER_SIZE, LRA_ACC_BUFFER_SIZE},
-      .cur_buf = 0,
+      .buf_size = LRA_ACC_BUFFER_SIZE,
+      .cur_w_buf = 0,
       .dbuf = {lra_acc_buf1, lra_acc_buf2},
   };
 
@@ -233,8 +228,6 @@ void LRA_Main_EnterPoint(void) {
 
   LRA_USB_SysInfo("Read \r\n");
 
-#endif
-
   /* LRA driving test */
   // test ok !
   HAL_StatusTypeDef tmp;
@@ -243,26 +236,13 @@ void LRA_Main_EnterPoint(void) {
   tmp = DRV2605L_Read_All(tca_drv_x.pDrv, test_data);
   tmp = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
   tmp = Lra_PWM_Dynamic_Set_Duty(&pwm_x, 500);
-
-  /* MPU 6500 read test -> test spi working properly -> same condition, failed after first read */
-//  uint8_t tx_tmp[3] = {0x75 | 0x80, 0, 0};
-//  uint8_t rx_tmp[3] = {0, 0};
-//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
-//                                                    3, 100);
-//  tx_tmp[0] = 0x1A | 0x80;
-//
-//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
-//                                                      3, 100);
-//
-//  ret = HAL_SPI_TransmitReceive(&hspi2, tx_tmp, rx_tmp,
-//                                                      3, 100);
-
-// It's NSS problem -> change to software NSS
+#endif
 
   while (1) {
     /* Loop update */
-    LRA_USB_Main_Parser();
+
     /* usb parser */
+    LRA_USB_Main_Parser();
 
     // usb receive flag & parser
 
@@ -281,6 +261,7 @@ void LRA_Main_EnterPoint(void) {
     /* update pwm singal */
 
     /* transport data to Rasp */
+    LRA_USB_Send_ACC();
   }
 }
 
@@ -372,6 +353,7 @@ static uint16_t LRA_USB_Main_Parser() {
    *
    * 1. 有固定字串可以比對的，進行比對 (應該只有 init)
    * 2. 需要執行內部程式，執行
+   *
    *
    * 以下是每個指令的成功返回格式， {} 代表變數
    * 失敗會返回錯誤類型以及錯誤的指令類別，見 CMD_PARSE_ERR
@@ -591,6 +573,9 @@ static uint16_t LRA_USB_Main_Parser() {
       }
 
       switch (device_index) {
+        case LRA_DEVICE_ALL:
+          LRA_USB_SysInfo("Reset all devices: Wait for implement\n");
+          break;
         case LRA_DEVICE_STM32:
           func_callback = NVIC_SystemReset;
           break;
@@ -759,6 +744,8 @@ static uint16_t LRA_USB_Main_Parser() {
   /* PR_OK (0) | pmsg.cmd_type */
   return pmsg.cmd_type;
 }
+
+static uint16_t LRA_USB_Send_ACC() {}
 
 uint8_t LRA_Device_Is_Valid(uint8_t device_index) {
   return (device_index >= LRA_DEVICE_INVALID) ? 0 : 1;

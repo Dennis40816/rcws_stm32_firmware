@@ -19,11 +19,14 @@
 
 uint8_t lra_usb_dtr_flag;
 
+// current usage
 uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE] = {0};
 uint8_t lra_usb_tx_buf[LRA_USB_BUFFER_SIZE] = {0};
 uint8_t lra_usb_rx_user_buf[LRA_USB_BUFFER_SIZE] = {0};
 
 // fucture usage
+uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
+uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
 LRA_DualBuf_t lra_usb_tx_dbuf;
 
 /* private variables */
@@ -296,6 +299,13 @@ HAL_StatusTypeDef LRA_USB_Generate_IN_Msg_Heap(LRA_USB_IN_Cmd_t cmd_type,
   return HAL_OK;
 }
 
+/**
+ * @brief Interface of USB transmition
+ *
+ * @param pair
+ * @param block_flag
+ * @return HAL_StatusTypeDef
+ */
 HAL_StatusTypeDef LRA_USB_Send_Msg(const LRA_USB_Buf_Len_Pair_t* const pair,
                                    const LRA_Flag_t block_flag) {
   if (pair == NULL || pair->pbuf == NULL || pair->len == 0)

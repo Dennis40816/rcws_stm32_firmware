@@ -35,6 +35,8 @@ extern const uint16_t lra_usb_constmsg_out_len[32];
 extern const uint16_t lra_usb_constmsg_in_len[32];
 
 // future usage
+extern uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE];
+extern uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE];
 extern LRA_DualBuf_t lra_usb_tx_dbuf;
 
 /* macros */
@@ -60,8 +62,6 @@ typedef enum {
    */
   LRA_USB_DATA_MODE = 0x03,
 } LRA_USB_Mode_t;
-
-typedef enum { LRA_FLAG_UNSET, LRA_FLAG_SET } LRA_Flag_t;
 
 /**
  * PC: Precheck
