@@ -12,12 +12,14 @@
 
 #include "lra/lra_user_config.h"
 
+#include "stm32f4xx_hal_tim.h"
+
 /* extern variables */
 
-// TODO: timer ref: https://blog.csdn.net/Henjay724/article/details/117763580
-
-extern unsigned long long lra_timer_usec_counter;
-
 /* public functions */
+
+float LRA_Get_Time();
+unsigned long long LRA_Get_Time_Ms();
+void LRA_Ms_Increment();
 
 #endif /* INC_LRA_LRA_TIMER_H_ */
