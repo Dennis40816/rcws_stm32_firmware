@@ -10,12 +10,6 @@
 
 /* enums */
 
-// UEV for update event
-typedef enum {
-  LRA_PWM_FREQ_UEV_BIT = 0,
-  LRA_PWM_DUTY_UEV_BIT = 1,
-} LRA_PWM_Update_Bit_t;
-
 typedef enum {
   LRA_DEVICE_STM32,
   LRA_DEVICE_MPU6500,

@@ -8,6 +8,22 @@
 #include "lra/lra_pwm.h"
 #include "lra/lra_util.h"
 
+/* static vars */
+
+static const size_t axis_count = 3;
+static const size_t parameters_per_axis = 2;
+static const size_t byte_count_per_parameter = sizeof(float);
+static const size_t byte_count_delimiter = 1;
+static const size_t byte_count_per_axis =
+    parameters_per_axis * (byte_count_per_parameter + byte_count_delimiter);
+static const size_t offset_freq =
+    byte_count_per_parameter + byte_count_delimiter;
+
+static const float pwm_min_amp = 0.0f;     // Define your min amp value
+static const float pwm_max_amp = 1000.0f;  // Define your max amp value
+static const float pwm_min_amp = 1.0f;     // Define your min freq value
+static const float pwm_max_freq = 10.0f;   // Define your max freq value
+
 /* public functions */
 
 HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle,
@@ -89,7 +105,7 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle,
 }
 
 /**
- * @brief
+ * @brief Dynamicaly set PWM duty cycle
  *
  * @warning This function can only calculate 16 bit compare register (<=65536)
  * @param handle
@@ -128,6 +144,84 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
 
   /* update to hardware register CCR */
   __HAL_TIM_SET_COMPARE(handle->htim, handle->ch, new_CCR);
+
+  return HAL_OK;
+}
+
+/**
+ * @brief Parse binary data into RcwsPwmInfo structure.
+ *
+ * @details
+ * This function takes an array of bytes as input and parses the data into an
+ * RcwsPwmInfo structure. The input data should be organized as follows:
+ *   - For each axis (X, Y, Z), there are two parameters, amplitude (amp) and
+ * frequency (freq).
+ *   - Each parameter is represented as a 4-byte floating point number (total of
+ * 8 bytes per axis).
+ *   - Parameters are separated by a comma (',') and axes are separated by a
+ * semicolon (';').
+ *
+ * Therefore, the expected length of the input data is 30 bytes + "\r\n".
+ *
+ * @param data A pointer to an array of bytes representing the parameters for
+ * each axis.
+ * @param info A struct pointer holds LRA_RCWS_PWM_Info_t. Will be modified if
+ * parsing successed.
+ * @return RcwsPwmInfo structure filled with the parsed parameters.
+ */
+HAL_StatusTypeDef LRA_Parse_RCWS_PWM_Info(const uint8_t* const pdata,
+                                          LRA_RCWS_PWM_Info_t* info) {
+  /* save check \r\n exist */
+  if ((pdata + axis_count * byte_count_per_axis) != '\r' &&
+      (pdata + axis_count * byte_count_per_axis + 1) != '\n')
+    return HAL_ERROR;
+
+  /* parse */
+  LRA_PWM_Info_t* pwm_info_arr[axis_count] = {&(info->x), &(info->y),
+                                              &(info->z)};
+
+  /* Assuming little-endian system, and float is 4 bytes */
+  for (size_t i = 0; i < axis_count; ++i) {
+    const uint8_t* amp_bytes = pdata + i * byte_count_per_axis;
+    const uint8_t* freq_bytes = amp_bytes + offset_freq;
+    LRA_PWM_Info_t* pwm_info = pwm_info_arr[i];
+
+    /* Assuming that the platform uses IEEE 754 floating-point representation */
+    memcpy(&(pwm_info->amp), amp_bytes, sizeof(float));
+    memcpy(&(pwm_info->freq), freq_bytes, sizeof(float));
+  }
+
+  return HAL_OK;
+}
+
+/**
+ * @brief Checks if all parameters in the LRA_RCWS_PWM_Info_t structure are
+ * within their predefined limits.
+ *
+ * This function iterates over each axis in the LRA_RCWS_PWM_Info_t structure,
+ * checking if the amplitude and frequency parameters are within their
+ * respective minimum and maximum limits. The limits are defined by MIN_AMP,
+ * MAX_AMP, MIN_FREQ, and MAX_FREQ constants.
+ *
+ * @param info The LRA_RCWS_PWM_Info_t structure that contains the parameters to
+ * be checked.
+ * @return Returns 'HAL_OK' if all parameters are within their respective
+ * limits, 'HAL_ERROR' otherwise.
+ */
+HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(
+    const LRA_RCWS_PWM_Info_t* info) {
+  LRA_PWM_Info_t* pwm_info_arr[axis_count] = {&(info->x), &(info->y),
+                                              &(info->z)};
+
+  for (size_t i = 0; i < axis_count; ++i) {
+    LRA_PWM_Info_t* pwm_info = pwm_info_arr[i];
+    if (pwm_info->amp <= pwm_min_amp || pwm_info->amp >= pwm_max_amp) {
+      return HAL_ERROR;
+    }
+    if (pwm_info->freq <= pwm_min_amp || pwm_info->freq >= pwm_max_freq) {
+      return HAL_ERROR;
+    }
+  }
 
   return HAL_OK;
 }

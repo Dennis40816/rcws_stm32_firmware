@@ -16,6 +16,7 @@
 /* defines */
 
 #define SINGLE_CHAR_MSG_LEN (3)
+#define PWM_CMD_LEN (32)
 
 /** static variables definitions **/
 
@@ -35,7 +36,8 @@ const uint8_t* lra_usb_constmsg_in[32] = {
 const uint16_t lra_usb_constmsg_out_len[32] = {
     [CMD_INIT] = sizeof(msg_init) - 1,
     [CMD_SWITCH_MODE] = SINGLE_CHAR_MSG_LEN,
-    [CMD_RESET_DEVICE] = SINGLE_CHAR_MSG_LEN};
+    [CMD_RESET_DEVICE] = SINGLE_CHAR_MSG_LEN,
+    [CMD_UPDATE_PWM] = PWM_CMD_LEN};
 const uint16_t lra_usb_constmsg_in_len[32] = {
     [CMD_INIT] = sizeof(msg_init) - 1,
     [CMD_SWITCH_MODE] = SINGLE_CHAR_MSG_LEN,

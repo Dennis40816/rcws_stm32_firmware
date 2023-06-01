@@ -36,7 +36,12 @@
 
 // 128 is a constant defined by DRV2605L, 170 is default vibration freq of
 // VG1040003D in Hz.
-#define LRA_DEFAULT_PWM_FREQ (128 * 170)
+#define LRA_DRV_PWM_FREQ_COEFF (128)
+#define LRA_VG1040003D_RESONANT_FREQ (170)
+#define LRA_DEFAULT_RESONANT_PWM_FREQ \
+  (LRA_DRV_PWM_FREQ_COEFF * LRA_VG1040003D_RESONANT_FREQ)
+
+#define LRA_DEFAULT_USER_FREQ (5.0)
 
 // half of 1000 (1000‰)
 #define LRA_DEFAULT_PWM_DUTY (500)

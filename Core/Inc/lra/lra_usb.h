@@ -159,7 +159,7 @@ typedef enum {
   CMD_RESET_DEVICE,
   CMD_RUN_AUTOCALIBRATE,
   /*-----------------------DATA--------------------------*/
-  CMD_UPDATE_ARG,
+  CMD_UPDATE_PWM,
   CMD_UPDATE_ACC,
 
   // DO NOT TOUCH IT!
@@ -186,8 +186,8 @@ typedef enum {
   USB_IN_CMD_GET_REG = CMD_GET_REG,
   USB_IN_CMD_RESET_DEVICE = CMD_DATA_LEN_CONST | CMD_RESET_DEVICE,
   USB_IN_CMD_RUN_AUTOCALIBRATE = CMD_RUN_AUTOCALIBRATE,
-  /*-----------------------CRTL--------------------------*/
-  USB_IN_CMD_UPDATE_ARG = CMD_UPDATE_ARG,
+  /*-----------------------DATA--------------------------*/
+  USB_IN_CMD_UPDATE_PWM = CMD_UPDATE_PWM,
   USB_IN_CMD_UPDATE_ACC = CMD_NR | CMD_UPDATE_ACC,
 } LRA_USB_IN_Cmd_t;
 
@@ -207,8 +207,8 @@ typedef enum {
   USB_OUT_CMD_GET_REG = USB_IN_CMD_GET_REG | CMD_IS_OUT,
   USB_OUT_CMD_RESET_DEVICE = USB_IN_CMD_RESET_DEVICE | CMD_IS_OUT,
   USB_OUT_CMD_RUN_AUTOCALIBRATE = USB_IN_CMD_RUN_AUTOCALIBRATE | CMD_IS_OUT,
-  /*-----------------------CRTL--------------------------*/
-  USB_OUT_CMD_UPDATE_ARG = USB_IN_CMD_UPDATE_ARG | CMD_IS_OUT,
+  /*-----------------------DATA--------------------------*/
+  USB_OUT_CMD_UPDATE_PWM = USB_IN_CMD_UPDATE_PWM | CMD_IS_OUT,
   USB_OUT_CMD_UPDATE_ACC = USB_IN_CMD_UPDATE_ACC | CMD_IS_OUT,
 } LRA_USB_OUT_Cmd_t;
 

@@ -22,8 +22,6 @@
 
 /* macros */
 
-#define LRA_DRV_PWM_FREQ_COEFF (128)
-
 /* enums */
 
 typedef enum {
@@ -40,6 +38,18 @@ typedef struct {
   LRA_TIM_Ch_t ch;
 } LRA_PWM_t;
 
+/* alias to PwmInfo & RcwsPwmInfo for raspberry side */
+typedef struct PwmInfo {
+  float amp;
+  float freq;
+} LRA_PWM_Info_t;
+
+typedef struct RcwsPwmInfo {
+  LRA_PWM_Info_t x;
+  LRA_PWM_Info_t y;
+  LRA_PWM_Info_t z;
+} LRA_RCWS_PWM_Info_t;
+
 /* public functions */
 
 HAL_StatusTypeDef Lra_PWM_Init(LRA_PWM_t* handle,
@@ -50,5 +60,9 @@ HAL_StatusTypeDef Lra_PWM_Disable(LRA_PWM_t* handle);
 HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Freq(LRA_PWM_t* handle, uint32_t freq_hz);
 HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
                                            uint16_t duty_permil);
+HAL_StatusTypeDef LRA_Parse_RCWS_PWM_Info(const uint8_t* const pdata,
+                                          LRA_RCWS_PWM_Info_t* info);
+HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(
+    const LRA_RCWS_PWM_Info_t* info);
 
 #endif /* INC_LRA_LRA_PWM_H_ */

@@ -192,7 +192,8 @@ void LRA_Main_EnterPoint(void) {
 
   /* PWM init */
   for (int i = 0; i < LRA_MOTOR_NUM; i++) {
-    ret = Lra_PWM_Init(pwm_arr[i], LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_DUTY);
+    ret = Lra_PWM_Init(pwm_arr[i], LRA_DEFAULT_RESONANT_PWM_FREQ,
+                       LRA_DEFAULT_PWM_DUTY);
     if (ret != HAL_OK)
       error |= (1 << LRA_INIT_ERR_PWM);
   }
@@ -212,28 +213,10 @@ void LRA_Main_EnterPoint(void) {
   else
     LRA_USB_SysInfo("Init success\r\n");
 
-  /* parameters used in main loop */
-
-  /**
-   * @brief pwm related variables \r\n
-   *
-   * pwm_flag
-   *
-   * val 0 0 0 0 0 0 0 0
-   *     - - - - - - - -
-   * bit 7 6 5 4 3 2 1 0
-   *
-   * 0th bit: update pwm freq
-   * 1th bit: update pwm duty cycle
-   *
-   * check enum LRA_PWM_FLAG in lra_main.h also
-   */
-  uint8_t pwm_flag = 0;
-
-  // CMD
-  uint32_t pwm_freq_cmd[LRA_MOTOR_NUM] = {
-      LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ, LRA_DEFAULT_PWM_FREQ};
-  uint16_t pwm_duty_cmd[LRA_MOTOR_NUM] = {
+  // CMD, updated by CMD_UPDATE_PWM, used in controller
+  float user_freq_cmd[LRA_MOTOR_NUM] = {
+      LRA_DEFAULT_USER_FREQ, LRA_DEFAULT_USER_FREQ, LRA_DEFAULT_USER_FREQ};
+  uint16_t user_duty_cmd[LRA_MOTOR_NUM] = {
       LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY, LRA_DEFAULT_PWM_DUTY};
 
   // System enable
@@ -659,13 +642,42 @@ static uint16_t LRA_USB_Main_Parser() {
       /* TODO: call auto calibration */
       break;
 
-    case CMD_UPDATE_ARG:
+    /**
+     * CMD_UPDATE_PWM
+     * data format:
+     * x_pwm_amp (4 bytes) + ',' + x_pwm_freq(4 bytes) + ';'
+     * y_pwm_amp (4 bytes) + ',' + y_pwm_freq(4 bytes) + ';'
+     * z_pwm_amp (4 bytes) + ',' + z_pwm_freq(4 bytes) + ';'
+     * "\r\n"
+     *
+     * data len: const, 32 bytes
+     */
+    case CMD_UPDATE_PWM: {
       if (LRA_Get_USB_Mode() != LRA_USB_DATA_MODE) {
         mode_error_flag = LRA_FLAG_SET;
         break;
       }
-      /* TODO: update frequency and arg */
+
+      /* parse data into LRA_RCWS_PWM_Info_t */
+      LRA_RCWS_PWM_Info_t info;
+      HAL_StatusTypeDef parse_result = LRA_Parse_RCWS_PWM_Info(cursor, &info);
+
+      if (parse_result != HAL_OK) {
+        parse_content_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      HAL_StatusTypeDef within_range = LRA_RCWS_PWM_Info_Range_Check(&info);
+
+      if (within_range != HAL_OK) {
+        parse_content_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      /* set duty cycle and pwm freq */
+
       break;
+    }
 
     case CMD_UPDATE_ACC:
       if (LRA_Get_USB_Mode() != LRA_USB_DATA_MODE) {
