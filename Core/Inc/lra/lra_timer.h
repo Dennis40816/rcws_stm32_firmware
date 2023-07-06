@@ -12,8 +12,6 @@
 
 #include "lra/lra_user_config.h"
 
-#include "stm32f4xx_hal_tim.h"
-
 /* extern variables */
 
 /* public functions */

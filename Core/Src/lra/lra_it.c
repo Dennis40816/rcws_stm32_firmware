@@ -13,7 +13,6 @@
 #include <lra/lra_it.h>
 
 #include <lra/lra_LED.h>
-#include <lra/lra_spi_devices.h>
 #include <main.h>
 
 /* extern variables */
@@ -24,7 +23,7 @@ uint8_t acc_should_send_flag = LRA_FLAG_UNSET;
 
 HAL_StatusTypeDef (*const LRA_IT_ADXL355_DRDY_Callback_P)(
     ADXL355_t* const,
-    LRA_DualBuf_t* const) = ADXL355_Read_NewestData_DualBuf;
+    LRA_AccRingBuffer_t* const) = ADXL355_Append_To_AccRingBuf;
 
 /* public functions */
 
@@ -48,6 +47,11 @@ void LRA_IT_LED_Flash_Every(const uint32_t it_times) {
 
     case LRA_LED_DOWN:
       HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+      counter = 0;
+      break;
+
+    case LRA_LED_UP:
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
       counter = 0;
       break;
   }

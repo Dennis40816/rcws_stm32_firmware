@@ -14,10 +14,12 @@
 #include "main.h"
 
 // includes device related headers
+#include "lra/lra_dbuf.h"
 #include "lra/lra_i2c_devices.h"
 #include "lra/lra_pwm.h"
 #include "lra/lra_spi_devices.h"
 #include "lra/lra_sys_error.h"
+#include "lra/lra_timer.h"
 #include "lra/lra_usb.h"
 
 // includes parser string operation related headers
@@ -35,6 +37,7 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
 
 /* extern self defined variables */
@@ -42,7 +45,11 @@ extern TIM_HandleTypeDef htim8;
 /* private function declarations */
 
 static uint16_t LRA_USB_Main_Parser();
-static uint16_t LRA_USB_Send_ACC();
+static uint32_t LRA_USB_Send_ACC(LRA_Acc_Dbuf_t* const dbuf);
+static HAL_StatusTypeDef LRA_RCWS_UpdatePWM(
+    const LRA_RCWS_PWM_Info_t* const info);
+static HAL_StatusTypeDef LRA_DRV2605L_Disable_All();
+static HAL_StatusTypeDef LRA_DRV2605L_Enable_All();
 
 /* global vars */
 
@@ -148,22 +155,6 @@ void LRA_Main_EnterPoint(void) {
   drv_z.dev_addr = drv2605l_default_addr;
   drv_z.timeout_ms = drv2605l_default_timeout_ms;
 
-  lra_usb_tx_dbuf = (LRA_DualBuf_t){
-      .buf_full = {0, 0},
-      .buf_index = {0, 0},
-      .buf_size = LRA_USB_BUFFER_SIZE,
-      .cur_w_buf = 0,
-      .dbuf = {lra_usb_tx_buf1, lra_usb_tx_buf2},
-  };
-
-  lra_acc_dbuf = (LRA_DualBuf_t){
-      .buf_full = {0, 0},
-      .buf_index = {0, 0},
-      .buf_size = LRA_ACC_BUFFER_SIZE,
-      .cur_w_buf = 0,
-      .dbuf = {lra_acc_buf1, lra_acc_buf2},
-  };
-
   /* USB Init */
   ret = LRA_USB_Init(LRA_USB_CRTL_MODE);
   if (ret != HAL_OK)
@@ -238,30 +229,38 @@ void LRA_Main_EnterPoint(void) {
   tmp = Lra_PWM_Dynamic_Set_Duty(&pwm_x, 500);
 #endif
 
+  /* enable ADXL355 */
+  ret = ADXL355_Start_Measure(&adxl355);
+
   while (1) {
     /* Loop update */
 
     /* usb parser */
     LRA_USB_Main_Parser();
 
-    // usb receive flag & parser
+    LRA_Xfer_NAcc_Rbuf2Dbuf(&lra_acc_rb, &lra_acc_dbuf, 100);
 
-    // usb tranmit flag
+    if (LRA_Get_USB_Mode() == LRA_USB_DATA_MODE) {
+      /* acc usb dbuf update */
+      // 10 is a tmp value
 
-    // cmd update flag
+      // usb tranmit flag
 
-    // internal update flag
+      // cmd update flag
 
-    // --------------------------------
+      // internal update flag
 
-    /* feedback */
+      // --------------------------------
 
-    /* calculate new pwm signal */
+      /* feedback */
 
-    /* update pwm singal */
+      /* calculate new pwm signal */
 
-    /* transport data to Rasp */
-    LRA_USB_Send_ACC();
+      /* update pwm singal */
+
+      /* transport data to Rasp */
+      LRA_USB_Send_ACC(&lra_acc_dbuf);
+    }
   }
 }
 
@@ -273,6 +272,8 @@ void LRA_Main_EnterPoint(void) {
 HAL_StatusTypeDef LRA_Main_System_Init(void) {
   // System interrupt related
   HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start_IT(&htim7);
+  LRA_LED_State_Change(LRA_LED_FLASH);
   return HAL_OK;
 }
 
@@ -384,6 +385,12 @@ static uint16_t LRA_USB_Main_Parser() {
         case LRA_USB_CRTL_MODE:
         case LRA_USB_DATA_MODE:
           LRA_Modify_USB_Mode(mode);
+
+          /* enable / disable DRV2605L */
+          if (mode == LRA_USB_CRTL_MODE)
+            LRA_DRV2605L_Disable_All();
+          else if (mode == LRA_USB_DATA_MODE)
+            LRA_DRV2605L_Enable_All();
 
           tx_data_pointer = tx_data_buf;
           *(tx_data_pointer) = mode;
@@ -576,6 +583,7 @@ static uint16_t LRA_USB_Main_Parser() {
         case LRA_DEVICE_ALL:
           LRA_USB_SysInfo("Reset all devices: Wait for implement\n");
           break;
+
         case LRA_DEVICE_STM32:
           func_callback = NVIC_SystemReset;
           break;
@@ -636,16 +644,26 @@ static uint16_t LRA_USB_Main_Parser() {
      * "\r\n"
      *
      * data len: const, 32 bytes
+     *
+     * return
+     * t: float
+     * what_we_just_recv(32 bytes)
+     *
+     * total data: 36 bytes
      */
     case CMD_UPDATE_PWM: {
-      if (LRA_Get_USB_Mode() != LRA_USB_DATA_MODE) {
-        mode_error_flag = LRA_FLAG_SET;
-        break;
-      }
+      // if (LRA_Get_USB_Mode() != LRA_USB_DATA_MODE) {
+      //   mode_error_flag = LRA_FLAG_SET;
+      //   break;
+      // }
+
+      // copy data to avoid rx_buf be modified by other msg
+      uint8_t data[64];
+      memcpy(data, cursor, pmsg.pdata_len);
 
       /* parse data into LRA_RCWS_PWM_Info_t */
       LRA_RCWS_PWM_Info_t info;
-      HAL_StatusTypeDef parse_result = LRA_Parse_RCWS_PWM_Info(cursor, &info);
+      HAL_StatusTypeDef parse_result = LRA_Parse_RCWS_PWM_Info(data, &info);
 
       if (parse_result != HAL_OK) {
         parse_content_error_flag = LRA_FLAG_SET;
@@ -660,6 +678,21 @@ static uint16_t LRA_USB_Main_Parser() {
       }
 
       /* set duty cycle and pwm freq */
+      HAL_StatusTypeDef update_state = LRA_RCWS_UpdatePWM(&info);
+
+      if (update_state != HAL_OK) {
+        internal_operation_error_flag = LRA_FLAG_SET;
+        break;
+      }
+
+      float current_time = LRA_Get_Time();
+
+      /* prepare in msg: header left */
+      tx_data_pointer = tx_data_buf;
+      memcpy(tx_data_pointer + 3, &current_time, sizeof(float));
+      memcpy(tx_data_pointer + 3 + sizeof(float), data, pmsg.pdata_len);
+
+      tx_data_len = sizeof(float) + pmsg.pdata_len;
 
       break;
     }
@@ -718,6 +751,10 @@ static uint16_t LRA_USB_Main_Parser() {
       LRA_USB_Generate_IN_Msg_Stack(pmsg.cmd_type, tx_data_pointer, tx_data_len,
                                     &msg_send, return_msg_add_eop_flag);
       send_status = LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
+    } else if (basic_cmd_type == CMD_UPDATE_PWM) {
+      LRA_USB_Generate_IN_Msg_Stack(pmsg.cmd_type, tx_data_pointer, tx_data_len,
+                                    &msg_send, return_msg_add_eop_flag);
+      send_status = LRA_USB_Send_Msg(&msg_send, LRA_FLAG_UNSET);
     }
 
     /* make msg (heap) */
@@ -745,7 +782,105 @@ static uint16_t LRA_USB_Main_Parser() {
   return pmsg.cmd_type;
 }
 
-static uint16_t LRA_USB_Send_ACC() {}
+/**
+ * @brief This function becomes a block function if dbuf->data going to xfer is
+ * full
+ *
+ * @param dbuf
+ * @return uint32_t
+ */
+static uint32_t LRA_USB_Send_ACC(LRA_Acc_Dbuf_t* const dbuf) {
+  // len check
+  uint32_t xfer_len = dbuf->count[dbuf->current_buffer];
+
+  // xfer takes place only if dbuf len >= 200
+  if (xfer_len < 200)
+    return 0;
+
+  // collect transmit data len and switch dbuf
+  LRA_Switch_Dbuf(dbuf);
+
+  uint8_t xfer_buf = 1 - dbuf->current_buffer;
+  xfer_len = dbuf->count[xfer_buf];
+
+  // send msg header, 2 for eop len
+  uint16_t eop_bias = xfer_len * sizeof(ADXL355_DataSet_t);
+  uint16_t data_len = eop_bias + 2;
+  uint8_t header[3] = {USB_IN_CMD_UPDATE_ACC, (uint8_t)(data_len >> 8),
+                       (uint8_t)data_len};
+  USBD_StatusTypeDef ret = CDC_Transmit_FS(header, 3);
+
+  bool eop_combine_flag = (xfer_len < dbuf->size);
+
+  // add eop at the end of dbuf->data that going to xfer
+  if (eop_combine_flag) {
+    ADXL355_DataSet_t* ptr = dbuf->data[xfer_buf];
+    uint8_t* dbuf_end = (uint8_t*)(ptr + xfer_len);
+    *dbuf_end = '\r';
+    *(dbuf_end + 1) = '\n';
+  }
+
+  uint16_t len = eop_combine_flag ? data_len : eop_bias;
+  ret = CDC_Transmit_FS((uint8_t*)dbuf->data[xfer_buf], len);
+
+  // send eop seperately, blocks here
+  if (!eop_combine_flag) {
+    uint8_t eop[2] = {'\r', '\n'};
+    ret = CDC_Transmit_FS(eop, 2);
+    while (ret != USBD_OK)
+      ret = CDC_Transmit_FS(eop, 2);
+  }
+
+  return xfer_len;
+}
+
+static HAL_StatusTypeDef LRA_DRV2605L_Disable_All() {
+  HAL_StatusTypeDef ret;
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
+  ret = DRV2605L_StandbySet(tca_drv_x.pDrv);
+
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_y);
+  ret = DRV2605L_StandbySet(tca_drv_y.pDrv);
+
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_z);
+  ret = DRV2605L_StandbySet(tca_drv_z.pDrv);
+
+  return ret;
+}
+
+static HAL_StatusTypeDef LRA_DRV2605L_Enable_All() {
+  HAL_StatusTypeDef ret;
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
+  ret = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
+
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_y);
+  ret = DRV2605L_StandbyUnset(tca_drv_y.pDrv);
+
+  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_z);
+  ret = DRV2605L_StandbyUnset(tca_drv_z.pDrv);
+}
+
+/**
+ * @brief Update PWM to STM32.
+ *
+ * @warning Call LRA_RCWS_PWM_Info_Range_Check() before call this function.
+ * @param info
+ * @return HAL_StatusTypeDef
+ */
+static HAL_StatusTypeDef LRA_RCWS_UpdatePWM(
+    const LRA_RCWS_PWM_Info_t* const info) {
+  uint16_t x_amp = (uint16_t)info->x.amp;
+  uint16_t y_amp = (uint16_t)info->y.amp;
+  uint16_t z_amp = (uint16_t)info->z.amp;
+
+  Lra_PWM_Dynamic_Set_Duty(&pwm_x, x_amp);
+  Lra_PWM_Dynamic_Set_Duty(&pwm_y, y_amp);
+  Lra_PWM_Dynamic_Set_Duty(&pwm_z, z_amp);
+
+  // TODO1: add freq parameter update
+
+  return HAL_OK;
+}
 
 uint8_t LRA_Device_Is_Valid(uint8_t device_index) {
   return (device_index >= LRA_DEVICE_INVALID) ? 0 : 1;

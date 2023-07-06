@@ -16,6 +16,10 @@ LRA_LEDStates_t led_state = LRA_LED_DOWN;
 
 /* public functions */
 
+void LRA_LED_State_Change(LRA_LEDStates_t next_state) {
+  led_state = next_state;
+}
+
 /**
  * @brief LED flash n time, blocked function
  *

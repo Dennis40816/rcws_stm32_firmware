@@ -24,11 +24,6 @@ uint8_t lra_usb_rx_buf[LRA_USB_BUFFER_SIZE] = {0};
 uint8_t lra_usb_tx_buf[LRA_USB_BUFFER_SIZE] = {0};
 uint8_t lra_usb_rx_user_buf[LRA_USB_BUFFER_SIZE] = {0};
 
-// fucture usage
-uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE] = {0};
-uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE] = {0};
-LRA_DualBuf_t lra_usb_tx_dbuf;
-
 /* private variables */
 
 static LRA_USB_Mode_t lra_usb_mode = LRA_USB_NONE_MODE;

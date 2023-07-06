@@ -8,9 +8,13 @@
 #include "lra/lra_pwm.h"
 #include "lra/lra_util.h"
 
+#include "string.h"
+
+#define AXIS_COUNT 3
+
 /* static vars */
 
-static const size_t axis_count = 3;
+static const size_t axis_count = AXIS_COUNT;
 static const size_t parameters_per_axis = 2;
 static const size_t byte_count_per_parameter = sizeof(float);
 static const size_t byte_count_delimiter = 1;
@@ -21,7 +25,7 @@ static const size_t offset_freq =
 
 static const float pwm_min_amp = 0.0f;     // Define your min amp value
 static const float pwm_max_amp = 1000.0f;  // Define your max amp value
-static const float pwm_min_amp = 1.0f;     // Define your min freq value
+static const float pwm_min_freq = 1.0f;    // Define your min freq value
 static const float pwm_max_freq = 10.0f;   // Define your max freq value
 
 /* public functions */
@@ -125,9 +129,12 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
    * than ARR_min is 100. We calculate this part for we don't want to calculate
    * in float precision. Therefore, the next step - calculate new CCR value
    * should be optimized later -> should not use any float or double.
+   *
+   * short: 如果 duty_permil 是 10 的倍數，則對 autoreload 的最小值要求是 100 -
+   * 1， 除此之外，由於是千分比，所以最小要求值是 1000 - 1
    */
-  uint8_t div10_remain = duty_permil % 10;
-  uint32_t ARR_min = (!div10_remain) ? 99 : 999;
+  uint8_t mod10_remain = duty_permil % 10;
+  uint32_t ARR_min = (!mod10_remain) ? 99 : 999;
 
   /* get ARR value  */
   volatile uint32_t ARR_cache = __HAL_TIM_GET_AUTORELOAD(handle->htim);
@@ -141,6 +148,10 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
   //                        ? (ARR_cache + 1) / 1000.0 * duty_permil
   //                        : (ARR_cache + 1) / 100.0 * duty_permil / 10;
   uint16_t new_CCR = (ARR_cache + 1) / 1000.0 * duty_permil;
+
+  // max limit of CCR
+  if (new_CCR >= ARR_cache)
+    new_CCR = ARR_cache - 1;
 
   /* update to hardware register CCR */
   __HAL_TIM_SET_COMPARE(handle->htim, handle->ch, new_CCR);
@@ -172,12 +183,12 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
 HAL_StatusTypeDef LRA_Parse_RCWS_PWM_Info(const uint8_t* const pdata,
                                           LRA_RCWS_PWM_Info_t* info) {
   /* save check \r\n exist */
-  if ((pdata + axis_count * byte_count_per_axis) != '\r' &&
-      (pdata + axis_count * byte_count_per_axis + 1) != '\n')
+  if (*(pdata + axis_count * byte_count_per_axis) != '\r' &&
+      *(pdata + axis_count * byte_count_per_axis + 1) != '\n')
     return HAL_ERROR;
 
   /* parse */
-  LRA_PWM_Info_t* pwm_info_arr[axis_count] = {&(info->x), &(info->y),
+  LRA_PWM_Info_t* pwm_info_arr[AXIS_COUNT] = {&(info->x), &(info->y),
                                               &(info->z)};
 
   /* Assuming little-endian system, and float is 4 bytes */
@@ -208,9 +219,8 @@ HAL_StatusTypeDef LRA_Parse_RCWS_PWM_Info(const uint8_t* const pdata,
  * @return Returns 'HAL_OK' if all parameters are within their respective
  * limits, 'HAL_ERROR' otherwise.
  */
-HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(
-    const LRA_RCWS_PWM_Info_t* info) {
-  LRA_PWM_Info_t* pwm_info_arr[axis_count] = {&(info->x), &(info->y),
+HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(LRA_RCWS_PWM_Info_t* info) {
+  LRA_PWM_Info_t* pwm_info_arr[AXIS_COUNT] = {&(info->x), &(info->y),
                                               &(info->z)};
 
   for (size_t i = 0; i < axis_count; ++i) {
@@ -225,3 +235,5 @@ HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(
 
   return HAL_OK;
 }
+
+#undef AXIS_COUNT

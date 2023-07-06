@@ -63,6 +63,6 @@ HAL_StatusTypeDef Lra_PWM_Dynamic_Set_Duty(LRA_PWM_t* handle,
 HAL_StatusTypeDef LRA_Parse_RCWS_PWM_Info(const uint8_t* const pdata,
                                           LRA_RCWS_PWM_Info_t* info);
 HAL_StatusTypeDef LRA_RCWS_PWM_Info_Range_Check(
-    const LRA_RCWS_PWM_Info_t* info);
+    LRA_RCWS_PWM_Info_t* info);
 
 #endif /* INC_LRA_LRA_PWM_H_ */
