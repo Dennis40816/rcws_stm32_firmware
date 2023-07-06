@@ -9,6 +9,8 @@
 
 #include "lra/lra_timer.h"
 
+#include "main.h"
+
 /* extern variables definitions */
 
 extern TIM_HandleTypeDef htim7;
@@ -23,6 +25,7 @@ static const float inv_1000 = 1.0f / 1000.0f;
 float LRA_Get_Time() {
   uint32_t micros = __HAL_TIM_GET_COUNTER(&htim7);
   float time = (float)lra_timer_ms_counter + (float)micros * inv_1000;
+  float tmp = time*inv_1000;
   return time * inv_1000;
 }
 

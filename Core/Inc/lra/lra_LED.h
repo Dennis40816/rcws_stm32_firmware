@@ -5,8 +5,8 @@
  *      Author: Dennis
  */
 
-#ifndef INC_LRA_LED_H_
-#define INC_LRA_LED_H_
+#ifndef INC_LRA_LRA_LED_H_
+#define INC_LRA_LRA_LED_H_
 
 /* includes */
 
@@ -25,6 +25,7 @@ extern LRA_LEDStates_t led_state;
 
 /* public functions */
 
+void LRA_LED_State_Change(LRA_LEDStates_t next_state);
 void LRA_LED_Flash_N(uint8_t n, uint32_t delay);
 
 #endif /* INC_LRA_LED_H_ */

@@ -118,6 +118,13 @@ HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl) {
   if (pAdxl->timeout_ms == 0)
     pAdxl->timeout_ms = 1;
 
+  // reset adxl355
+  if (ADXL355_Reset_Device(pAdxl) != HAL_OK) {
+    return HAL_ERROR;
+  }
+
+  HAL_Delay(100);
+
   // verify device part id
   if (ADXL355_ID_Verify(pAdxl) != HAL_OK)
     return HAL_ERROR;
@@ -219,12 +226,16 @@ HAL_StatusTypeDef ADXL355_ParseDataSet(ADXL355_t* const pAdxl,
   static int32_t i32_data[3];
 #define MASK_20 ((1 << 20) - 1)
 
-  u32_data[0] = (pData[0] << 16) | (pData[1] << 8) | (pData[2]);
-  u32_data[1] = (pData[3] << 16) | (pData[4] << 8) | (pData[5]);
-  u32_data[2] = (pData[6] << 16) | (pData[7] << 8) | (pData[8]);
+  u32_data[0] = (pData[0] << 12) | (pData[1] << 4) | (pData[2] >> 4);
+  u32_data[1] = (pData[3] << 12) | (pData[4] << 4) | (pData[5] >> 4);
+  u32_data[2] = (pData[6] << 12) | (pData[7] << 4) | (pData[8] >> 4);
 
   // convert to float
   float range_ = ADXL355_GetCacheRange(pAdxl);
+
+  if (range_ == 0.0)
+    return HAL_ERROR;
+
   const static uint32_t adc_step_num = 1048576;  // 2^20
 
   for (int i = 0; i < 3; i++) {
@@ -268,6 +279,16 @@ HAL_StatusTypeDef ADXL355_SelfTest(ADXL355_t* const pAdxl, uint8_t st) {
     return HAL_ERROR;
 
   // TODO
+}
+
+float ADXL355_GetCacheRange(const ADXL355_t* const pAdxl) {
+  if (pAdxl->range == 0x01)
+    return 2.0;
+  if (pAdxl->range == 0x10)
+    return 4.0;
+  if (pAdxl->range == 0x11)
+    return 8.0;
+  return 0.0;
 }
 
 /**

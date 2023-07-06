@@ -19,7 +19,12 @@
     "usbd_cdc.h": "c",
     "lra_spi_devices.h": "c",
     "stdlib.h": "c",
-    "adxl355.h": "c"
+    "adxl355.h": "c",
+    "lra_led.h": "c",
+    "stdbool.h": "c",
+    "lra_it.h": "c",
+    "lra_timer.h": "c",
+    "lra_dbuf.h": "c"
   },
 
   /* C/C++ */

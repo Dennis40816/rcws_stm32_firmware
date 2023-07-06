@@ -15,6 +15,24 @@
 
 #include "lra/lra_user_config.h"
 
+/* defines */
+
+/* public defines */
+
+#define max(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a > _b ? _a : _b;      \
+  })
+
+#define min(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a < _b ? _a : _b;      \
+  })
+
 /* enums */
 
 typedef enum { LRA_FLAG_UNSET, LRA_FLAG_SET } LRA_Flag_t;

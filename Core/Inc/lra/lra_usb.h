@@ -5,8 +5,8 @@
  *      Author: Dennis
  */
 
-#ifndef INC_RASP_CMD_H_
-#define INC_RASP_CMD_H_
+#ifndef INC_LRA_LRA_USB_H_
+#define INC_LRA_LRA_USB_H_
 
 /* defines */
 
@@ -33,11 +33,6 @@ extern const uint8_t* lra_usb_constmsg_out[32];
 extern const uint8_t* lra_usb_constmsg_in[32];
 extern const uint16_t lra_usb_constmsg_out_len[32];
 extern const uint16_t lra_usb_constmsg_in_len[32];
-
-// future usage
-extern uint8_t lra_usb_tx_buf1[LRA_USB_BUFFER_SIZE];
-extern uint8_t lra_usb_tx_buf2[LRA_USB_BUFFER_SIZE];
-extern LRA_DualBuf_t lra_usb_tx_dbuf;
 
 /* macros */
 

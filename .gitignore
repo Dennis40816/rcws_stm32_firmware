@@ -39,6 +39,9 @@
 Debug
 *Debug.launch
 
+# Release
+Release
+
 # Vagrant directory
 .vagrant/
 
