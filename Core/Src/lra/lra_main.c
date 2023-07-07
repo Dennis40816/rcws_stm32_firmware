@@ -127,6 +127,8 @@ ADXL355_t adxl355 = {
     .temp_intercept_Celsius = 0.0,
 };
 
+uint8_t stupid[17000];
+
 /* public functions */
 
 void LRA_Main_EnterPoint(void) {
@@ -215,18 +217,7 @@ void LRA_Main_EnterPoint(void) {
 
 // Test code
 #ifdef LRA_TEST
-  LRA_USB_SysInfo("Test started\r\n");
-
-  LRA_USB_SysInfo("Read \r\n");
-
-  /* LRA driving test */
-  // test ok !
-  HAL_StatusTypeDef tmp;
-  tmp = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
-  uint8_t test_data[48];
-  tmp = DRV2605L_Read_All(tca_drv_x.pDrv, test_data);
-  tmp = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
-  tmp = Lra_PWM_Dynamic_Set_Duty(&pwm_x, 500);
+  LRA_USB_SysInfo("ADXL355 starts to measure\r\n");
 #endif
 
   /* enable ADXL355 */
@@ -239,6 +230,11 @@ void LRA_Main_EnterPoint(void) {
     LRA_USB_Main_Parser();
 
     LRA_Xfer_NAcc_Rbuf2Dbuf(&lra_acc_rb, &lra_acc_dbuf, 100);
+
+    if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE) {
+      // WTF
+      int i = 1;
+    }
 
     if (LRA_Get_USB_Mode() == LRA_USB_DATA_MODE) {
       /* acc usb dbuf update */
@@ -793,8 +789,8 @@ static uint32_t LRA_USB_Send_ACC(LRA_Acc_Dbuf_t* const dbuf) {
   // len check
   uint32_t xfer_len = dbuf->count[dbuf->current_buffer];
 
-  // xfer takes place only if dbuf len >= 200
-  if (xfer_len < 200)
+  // xfer takes place only if dbuf len larger than some specified num
+  if (xfer_len < 500)
     return 0;
 
   // collect transmit data len and switch dbuf
@@ -806,30 +802,44 @@ static uint32_t LRA_USB_Send_ACC(LRA_Acc_Dbuf_t* const dbuf) {
   // send msg header, 2 for eop len
   uint16_t eop_bias = xfer_len * sizeof(ADXL355_DataSet_t);
   uint16_t data_len = eop_bias + 2;
-  uint8_t header[3] = {USB_IN_CMD_UPDATE_ACC, (uint8_t)(data_len >> 8),
-                       (uint8_t)data_len};
-  USBD_StatusTypeDef ret = CDC_Transmit_FS(header, 3);
 
-  bool eop_combine_flag = (xfer_len < dbuf->size);
+  float start_time = LRA_Get_Time();
+  stupid[0] = USB_IN_CMD_UPDATE_ACC;
+  stupid[1] = (uint8_t)(data_len >> 8);
+  stupid[2] = (uint8_t)data_len;
+  memcpy(&stupid[3], dbuf->data[xfer_buf], data_len - 2);
+  stupid[data_len + 1] = '\r';
+  stupid[data_len + 2] = '\n';
+  float stop_time = LRA_Get_Time();
+  float duration = stop_time - start_time;
 
-  // add eop at the end of dbuf->data that going to xfer
-  if (eop_combine_flag) {
-    ADXL355_DataSet_t* ptr = dbuf->data[xfer_buf];
-    uint8_t* dbuf_end = (uint8_t*)(ptr + xfer_len);
-    *dbuf_end = '\r';
-    *(dbuf_end + 1) = '\n';
-  }
+  USBD_StatusTypeDef ret = CDC_Transmit_FS(stupid, data_len + 3);
 
-  uint16_t len = eop_combine_flag ? data_len : eop_bias;
-  ret = CDC_Transmit_FS((uint8_t*)dbuf->data[xfer_buf], len);
-
-  // send eop seperately, blocks here
-  if (!eop_combine_flag) {
-    uint8_t eop[2] = {'\r', '\n'};
-    ret = CDC_Transmit_FS(eop, 2);
-    while (ret != USBD_OK)
-      ret = CDC_Transmit_FS(eop, 2);
-  }
+  //  TODO: data lose => You can find why later
+  //  uint8_t header[3] = {USB_IN_CMD_UPDATE_ACC, (uint8_t)(data_len >> 8),
+  //                       (uint8_t)data_len};
+  //  USBD_StatusTypeDef ret = CDC_Transmit_FS(header, 3);
+  //
+  //  bool eop_combine_flag = (xfer_len < dbuf->size);
+  //
+  //  // add eop at the end of dbuf->data that going to xfer
+  //  if (eop_combine_flag) {
+  //    ADXL355_DataSet_t* ptr = dbuf->data[xfer_buf];
+  //    uint8_t* dbuf_end = (uint8_t*)(ptr + xfer_len);
+  //    *dbuf_end = '\r';
+  //    *(dbuf_end + 1) = '\n';
+  //  }
+  //
+  //  uint16_t len = eop_combine_flag ? data_len : eop_bias;
+  //  ret = CDC_Transmit_FS((uint8_t*)dbuf->data[xfer_buf], len);
+  //
+  //  // send eop seperately, blocks here
+  //  if (!eop_combine_flag) {
+  //    uint8_t eop[2] = {'\r', '\n'};
+  //    ret = CDC_Transmit_FS(eop, 2);
+  //    while (ret != USBD_OK)
+  //      ret = CDC_Transmit_FS(eop, 2);
+  //  }
 
   return xfer_len;
 }

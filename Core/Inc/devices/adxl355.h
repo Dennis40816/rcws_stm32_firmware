@@ -124,12 +124,12 @@ typedef struct {
 
 /* public functions */
 
-HAL_StatusTypeDef ADXL355_GetRange(ADXL355_t* const pAdxl);
+HAL_StatusTypeDef ADXL355_HardwareGetRange(ADXL355_t* const pAdxl);
 HAL_StatusTypeDef ADXL355_SetRange(ADXL355_t* const pAdxl,
                                    ADXL355_Ranges_t new_range);
 HAL_StatusTypeDef ADXL355_Calibrate(ADXL355_t* const pAdxl);
 HAL_StatusTypeDef ADXL355_Init(ADXL355_t* const pAdxl);
-float ADXL355_GetCacheRange(const ADXL355_t* const pAdxl);
+float ADXL355_GetRangeCache(const ADXL355_t* const pAdxl);
 HAL_StatusTypeDef ADXL355_ParseOffset(ADXL355_t* const pAdxl,
                                       const uint8_t* const pOffset,
                                       ADXL355_DataSet_t* const pResult);

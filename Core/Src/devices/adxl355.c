@@ -53,7 +53,7 @@ static HAL_StatusTypeDef ADXL355_UserConfig(ADXL355_t* const pAdxl);
  * @param pAdxl
  * @return HAL_StatusTypeDef
  */
-HAL_StatusTypeDef ADXL355_GetRange(ADXL355_t* const pAdxl) {
+HAL_StatusTypeDef ADXL355_HardwareGetRange(ADXL355_t* const pAdxl) {
   uint8_t val;
   HAL_StatusTypeDef ret = ADXL355_ReadReg(pAdxl, ADXL355_Range, &val);
 
@@ -231,7 +231,7 @@ HAL_StatusTypeDef ADXL355_ParseDataSet(ADXL355_t* const pAdxl,
   u32_data[2] = (pData[6] << 12) | (pData[7] << 4) | (pData[8] >> 4);
 
   // convert to float
-  float range_ = ADXL355_GetCacheRange(pAdxl);
+  float range_ = ADXL355_GetRangeCache(pAdxl);
 
   if (range_ == 0.0)
     return HAL_ERROR;
@@ -279,16 +279,6 @@ HAL_StatusTypeDef ADXL355_SelfTest(ADXL355_t* const pAdxl, uint8_t st) {
     return HAL_ERROR;
 
   // TODO
-}
-
-float ADXL355_GetCacheRange(const ADXL355_t* const pAdxl) {
-  if (pAdxl->range == 0x01)
-    return 2.0;
-  if (pAdxl->range == 0x10)
-    return 4.0;
-  if (pAdxl->range == 0x11)
-    return 8.0;
-  return 0.0;
 }
 
 /**
@@ -719,5 +709,8 @@ void ADXL355_Software_NSS_Disable(ADXL355_t* const pAdxl) {
  * @return HAL_StatusTypeDef
  */
 static HAL_StatusTypeDef ADXL355_UserConfig(ADXL355_t* const pAdxl) {
+  /* write your own config here */
+  ADXL355_SetRange(pAdxl, ADXL355_ACC_8G);
+
   return HAL_OK;
 }
