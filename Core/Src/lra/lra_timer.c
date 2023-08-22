@@ -17,7 +17,7 @@ extern TIM_HandleTypeDef htim7;
 
 /* static variables */
 
-static unsigned long long lra_timer_ms_counter = 0;
+static volatile unsigned long long lra_timer_ms_counter = 0;
 static const float inv_1000 = 1.0f / 1000.0f;
 
 /* public functions */
