@@ -13,6 +13,9 @@
 #include "lra/lra_timer.h"
 #include "string.h"
 
+// debug
+#include "lra/lra_it.h"
+
 /* private functions definition */
 
 static uint32_t LRA_AccRingBuf_GetReadMaxStep(LRA_AccRingBuffer_t* rbuf);
@@ -46,6 +49,8 @@ HAL_StatusTypeDef ADXL355_Append_To_AccRingBuf(
       pAdxl->hspi == NULL)
     return HAL_ERROR;
 
+  static float last_time = 0;
+
   // 10 for 9 data bytes + 1 dummy byte
   static const uint8_t tx_tmp[10] = {(ADXL355_XDATA3 << 1 | ADXL355_SPI_R)};
   uint8_t rx_tmp[10] = {0};
@@ -62,6 +67,13 @@ HAL_StatusTypeDef ADXL355_Append_To_AccRingBuf(
 
   // get current time
   float current_time = LRA_Get_Time();
+
+  // XXX: Fix time unorder
+  if (current_time < last_time) {
+    current_time += 0.001;
+  }
+
+  last_time = current_time;
 
   // get pointer
   ADXL355_DataSet_t* dest = _Get_RingBuf_W_Pointer(rbuf);

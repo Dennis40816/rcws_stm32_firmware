@@ -232,8 +232,7 @@ void LRA_Main_EnterPoint(void) {
     LRA_Xfer_NAcc_Rbuf2Dbuf(&lra_acc_rb, &lra_acc_dbuf, 100);
 
     if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE) {
-      // WTF
-      int i = 1;
+
     }
 
     if (LRA_Get_USB_Mode() == LRA_USB_DATA_MODE) {
@@ -803,15 +802,14 @@ static uint32_t LRA_USB_Send_ACC(LRA_Acc_Dbuf_t* const dbuf) {
   uint16_t eop_bias = xfer_len * sizeof(ADXL355_DataSet_t);
   uint16_t data_len = eop_bias + 2;
 
-  float start_time = LRA_Get_Time();
+  // construct data packet
   stupid[0] = USB_IN_CMD_UPDATE_ACC;
   stupid[1] = (uint8_t)(data_len >> 8);
   stupid[2] = (uint8_t)data_len;
   memcpy(&stupid[3], dbuf->data[xfer_buf], data_len - 2);
   stupid[data_len + 1] = '\r';
   stupid[data_len + 2] = '\n';
-  float stop_time = LRA_Get_Time();
-  float duration = stop_time - start_time;
+
 
   USBD_StatusTypeDef ret = CDC_Transmit_FS(stupid, data_len + 3);
 
@@ -859,15 +857,17 @@ static HAL_StatusTypeDef LRA_DRV2605L_Disable_All() {
 }
 
 static HAL_StatusTypeDef LRA_DRV2605L_Enable_All() {
-  HAL_StatusTypeDef ret;
-  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
-  ret = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
+  HAL_StatusTypeDef ret[6];
+  ret[0] = TCA_DRV_Pair_SwitchCH(&tca_drv_x);
+  ret[1] = DRV2605L_StandbyUnset(tca_drv_x.pDrv);
 
-  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_y);
-  ret = DRV2605L_StandbyUnset(tca_drv_y.pDrv);
+  ret[2] = TCA_DRV_Pair_SwitchCH(&tca_drv_y);
+  ret[3] = DRV2605L_StandbyUnset(tca_drv_y.pDrv);
 
-  ret = TCA_DRV_Pair_SwitchCH(&tca_drv_z);
-  ret = DRV2605L_StandbyUnset(tca_drv_z.pDrv);
+  ret[4] = TCA_DRV_Pair_SwitchCH(&tca_drv_z);
+  ret[5] = DRV2605L_StandbyUnset(tca_drv_z.pDrv);
+
+  return ret[0] | ret[1] | ret[2] | ret[3] | ret[4] | ret[5];
 }
 
 /**
