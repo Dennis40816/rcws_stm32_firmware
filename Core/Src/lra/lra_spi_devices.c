@@ -68,11 +68,6 @@ HAL_StatusTypeDef ADXL355_Append_To_AccRingBuf(
   // get current time
   float current_time = LRA_Get_Time();
 
-  // XXX: Fix time unorder
-  if (current_time < last_time) {
-    current_time += 0.001;
-  }
-
   last_time = current_time;
 
   // get pointer

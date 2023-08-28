@@ -23,8 +23,17 @@ static const float inv_1000 = 1.0f / 1000.0f;
 /* public functions */
 
 float LRA_Get_Time() {
+  static volatile float last_time = 0.0f;
   uint32_t micros = __HAL_TIM_GET_COUNTER(&htim7);
   float time = (float)lra_timer_ms_counter + (float)micros * inv_1000;
+
+  /* XXX: fix unknown reason delay */
+  if (time - last_time < 0.0f)
+  {
+	  time = time + 0.001;
+  }
+
+  last_time = time;
   return time * inv_1000;
 }
 
