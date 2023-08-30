@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lra/lra_it.h"
+#include "lra/lra_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,7 +89,6 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-  // NVIC_SystemReset();
   LRA_LED_State_Change(LRA_LED_UP);
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -223,14 +223,12 @@ void EXTI2_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-
+  // IRQHandler, avg 2 us in debug mode
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(KX_INT1_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-  // DRDY callback
+  // DRDY callback, avg 57 us in debug mode
   LRA_IT_ADXL355_DRDY_Callback_P(&adxl355, &lra_acc_rb);
-
   /* USER CODE END EXTI4_IRQn 1 */
 }
 
@@ -274,12 +272,8 @@ void TIM6_IRQHandler(void)
   /* USER CODE BEGIN TIM6_IRQn 1 */
 
   // LED control, every second for timer6
+  // avg 3 us in debug mode
   LRA_IT_LED_Flash_Every(10);
-
-  // USB_DATA_MODE: acc_send_flag
-  // if (LRA_Get_USB_Mode() == LRA_USB_DATA_MODE)
-  //   acc_should_send_flag = LRA_FLAG_SET;
-
   /* USER CODE END TIM6_IRQn 1 */
 }
 
@@ -293,7 +287,7 @@ void TIM7_IRQHandler(void)
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
-
+  // avg 3 us in debug mode
   /* USER CODE END TIM7_IRQn 1 */
 }
 
@@ -303,11 +297,9 @@ void TIM7_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 {
   /* USER CODE BEGIN OTG_FS_IRQn 0 */
-
   /* USER CODE END OTG_FS_IRQn 0 */
   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
   /* USER CODE BEGIN OTG_FS_IRQn 1 */
-
   /* USER CODE END OTG_FS_IRQn 1 */
 }
 

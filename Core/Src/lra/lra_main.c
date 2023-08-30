@@ -213,7 +213,7 @@ void LRA_Main_EnterPoint(void) {
   }
 
   // Flash *2: init end
-  LRA_LED_Flash_N(2, 500);
+  LRA_LED_Flash_N(2, 200);
 
 // Test code
 #ifdef LRA_TEST
@@ -223,12 +223,22 @@ void LRA_Main_EnterPoint(void) {
   /* enable ADXL355 */
   ret = ADXL355_Start_Measure(&adxl355);
 
+  /* main loop var init */
+  uint32_t t_len = 0;
+
+  /* main loop time cost in debug mode
+   * nothing happen: 7 us
+   * acc transmit (500) data, no other message parsing required: 850 us
+   * parse time: unknown
+   *  */
+
   while (1) {
     /* Loop update */
 
     /* usb parser */
     LRA_USB_Main_Parser();
 
+    /* Copy data from ring buffer to ping pong buffer */
     LRA_Xfer_NAcc_Rbuf2Dbuf(&lra_acc_rb, &lra_acc_dbuf, 100);
 
     if (LRA_Get_USB_Mode() == LRA_USB_NONE_MODE) {
@@ -253,8 +263,9 @@ void LRA_Main_EnterPoint(void) {
 
       /* update pwm singal */
 
-      /* transport data to Rasp */
-      LRA_USB_Send_ACC(&lra_acc_dbuf);
+      /* Acc data transmitting to RCWS server */
+      t_len = LRA_USB_Send_ACC(&lra_acc_dbuf);
+
     }
   }
 }
