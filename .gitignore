@@ -30,8 +30,9 @@
 *.png
 
 # Eclipse CDT project files
-.cproject
-.project
+# .cproject
+# .project
+.mxproject
 .settings/
 .metadata
 
